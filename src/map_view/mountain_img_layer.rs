@@ -178,7 +178,6 @@ impl<P: Projection, S: MapShape> MapViewLayer<P, S> for MountainImgLayer {
         center_longitude: f32,
         complete_map: &CompleteMap<S>,
     ) {
-
         let Ok(icon) = open("img2/mountain1.png") else {
             println!("Error: mountain1.png not found");
             return;

@@ -45,7 +45,7 @@ impl<S: MapShape + 'static> MapPipeline<S> {
             let t3 = Instant::now();
         }
         let end = Instant::now();
-        println!("Total generation time: ", end - start);
+        println!("Total generation time: {end - start}");
         return complete_map;
     }
 }
