@@ -1,0 +1,31 @@
+[package]
+name = "map_builder"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+image = "0.23.14"
+noise = "0.8.0"
+rand = "0.8.4"
+num = "0.2.1"
+num-traits = "0.2.16"
+rayon = "1.10.0"
+lazy_static = "1.4"
+bincode = "1.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dependencies.rocket]
+version = "0.5.0-rc.2"
+features = ["json"]
+
+[profile.dev]
+opt-level = 3
+
+[[bin]]
+name = "cli"
+path = "src/main.rs"
+
+[[bin]]
+name = "rest_api"
+path = "src/main_rest_api.rs"
