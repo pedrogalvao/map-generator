@@ -143,9 +143,7 @@ where
             return;
         };
         if complete_map.coastline != None {
-            let i1 = Instant::now();
             self.draw_quick(base_img, projection, center_longitude, complete_map);
-            let i2 = Instant::now();
             return;
         }
         let height_map = (self.selector)(complete_map);
@@ -219,7 +217,6 @@ where
         if self.thickness == 0 {
             return;
         };
-        let i1 = Instant::now();
         let height_map = (self.selector)(complete_map);
         for i in 0..base_img.width() {
             for j in 0..base_img.height() {
@@ -269,6 +266,5 @@ where
                 }
             }
         }
-        let i2 = Instant::now();
     }
 }

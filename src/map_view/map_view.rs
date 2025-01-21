@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use image::{ImageBuffer, Rgba};
 
 use crate::{complete_map::CompleteMap, shapes::map_shape::MapShape};

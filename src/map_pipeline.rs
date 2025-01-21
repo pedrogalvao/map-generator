@@ -42,7 +42,6 @@ impl<S: MapShape + 'static> MapPipeline<S> {
             dbg!("step", i);
             dbg!("duration: ", t2 - t1);
             draw_step(&complete_map, i);
-            let t3 = Instant::now();
         }
         let end = Instant::now();
         dbg!("Total generation time: ", end - start);
