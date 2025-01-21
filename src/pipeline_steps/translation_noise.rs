@@ -6,14 +6,12 @@ use crate::{complete_map::CompleteMap, shapes::map_shape::MapShape};
 use super::{pipeline_step::PipelineStep, util::CustomNoise};
 
 pub struct TranslationNoise {
-    seed: u32,
     noises: [CustomNoise; 8],
 }
 
 impl TranslationNoise {
     pub fn new(seed: u32) -> Self {
         TranslationNoise {
-            seed,
             noises: [
                 CustomNoise::new(seed, 6.0, 5.0),
                 CustomNoise::new(seed + 1, 6.0, 5.0),
