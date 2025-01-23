@@ -301,23 +301,29 @@ fn erosion(store: &State<MapStore>) -> Json<Message> {
     match cmap_enum {
         CompleteMapEnum::Globe(cmap) => {
             let cmap2 = cmap.clone();
+            let cmap3 = HydraulicErosion::new(4).apply(&cmap2);
+            let cmap4 = DefineCoastline{}.apply(&cmap3);
             locked_store.insert(
                 key,
-                CompleteMapEnum::Globe(HydraulicErosion::new(4).apply(&cmap2)),
+                CompleteMapEnum::Globe(cmap4),
             );
         }
         CompleteMapEnum::Cylinder(cmap) => {
             let cmap2 = cmap.clone();
+            let cmap3 = HydraulicErosion::new(4).apply(&cmap2);
+            let cmap4 = DefineCoastline{}.apply(&cmap3);
             locked_store.insert(
                 key,
-                CompleteMapEnum::Cylinder(HydraulicErosion::new(4).apply(&cmap2)),
+                CompleteMapEnum::Cylinder(cmap4),
             );
         }
         CompleteMapEnum::Flat(cmap) => {
             let cmap2 = cmap.clone();
+            let cmap3 = HydraulicErosion::new(4).apply(&cmap2);
+            let cmap4 = DefineCoastline{}.apply(&cmap3);
             locked_store.insert(
                 key,
-                CompleteMapEnum::Flat(HydraulicErosion::new(4).apply(&cmap2)),
+                CompleteMapEnum::Flat(cmap4),
             );
         }
     };
@@ -338,15 +344,21 @@ fn resize(input: Json<Resize>, store: &State<MapStore>) -> Json<Message> {
     match cmap_enum {
         CompleteMapEnum::Globe(cmap) => {
             let cmap2 = cmap.clone();
-            locked_store.insert(key, CompleteMapEnum::Globe(input.apply(&cmap2)));
+            let cmap3 = input.apply(&cmap2);
+            let cmap4 = DefineCoastline{}.apply(&cmap3);
+            locked_store.insert(key, CompleteMapEnum::Globe(cmap4));
         }
         CompleteMapEnum::Cylinder(cmap) => {
             let cmap2 = cmap.clone();
-            locked_store.insert(key, CompleteMapEnum::Cylinder(input.apply(&cmap2)));
+            let cmap3 = input.apply(&cmap2);
+            let cmap4 = DefineCoastline{}.apply(&cmap3);
+            locked_store.insert(key, CompleteMapEnum::Cylinder(cmap4));
         }
         CompleteMapEnum::Flat(cmap) => {
             let cmap2 = cmap.clone();
-            locked_store.insert(key, CompleteMapEnum::Flat(input.apply(&cmap2)));
+            let cmap3 = input.apply(&cmap2);
+            let cmap4 = DefineCoastline{}.apply(&cmap3);
+            locked_store.insert(key, CompleteMapEnum::Flat(cmap4));
         }
     };
     Json(Message {
