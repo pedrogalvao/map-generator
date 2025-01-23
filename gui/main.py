@@ -11,6 +11,7 @@ from initial_menu import InitialMenu
 from menu_bar import TopMenuBar
 from viewer import MapViewer
 from view_menu import ViewMenu
+from new_view_menu import NewViewMenu
 
 
 IMAGES_DIR_PATH = "images/earth"
@@ -78,6 +79,8 @@ class MapMaker(QMainWindow):
                 print(json_data)
                 response = requests.post(self.backend_address + "load", data=json_data, headers=headers)
                 self.map_viewer.directory = "out"
+                if response.status_code == 200:
+                    NewViewMenu(self).exec()
                 print(f'View Response status code: {response.status_code}')
                 print(f'View Response JSON: {response.json()}')
             elif file[-4:] == ".png":
@@ -85,6 +88,8 @@ class MapMaker(QMainWindow):
                 print(json_data)
                 response = requests.post(self.backend_address + "generate_from_image", data=json_data, headers=headers)
                 self.map_viewer.directory = "out"
+                if response.status_code == 200:
+                    NewViewMenu(self).exec()
                 print(f'View Response status code: {response.status_code}')
                 print(f'View Response JSON: {response.json()}')
 

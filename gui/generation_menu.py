@@ -6,9 +6,10 @@ from time import sleep
 import requests
 import json
 import re
-from PyQt5.QtWidgets import QFormLayout, QCheckBox, QDialog, QDialogButtonBox, QComboBox, QApplication, QPushButton, QWidget, QLineEdit, QHBoxLayout, QSlider, QDoubleSpinBox, QSpinBox, QFileDialog
+from PyQt5.QtWidgets import QFormLayout, QCheckBox, QDialog, QComboBox, QApplication, QPushButton, QWidget, QLineEdit, QHBoxLayout, QSlider, QDoubleSpinBox, QSpinBox, QFileDialog
 from PyQt5.QtGui import QPixmap, QCursor
 from PyQt5.QtCore import pyqtSignal, Qt
+from new_view_menu import NewViewMenu
 
 
 def is_empty_image(qpixmap):
@@ -241,6 +242,7 @@ class GenerationMenu(QDialog):
         t1.join()
         t2.join()
         self.accept()
+        NewViewMenu(self.main_window).exec()
 
 
 if __name__ == "__main__":

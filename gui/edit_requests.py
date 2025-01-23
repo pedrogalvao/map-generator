@@ -107,8 +107,8 @@ class WaterLevelPopup(OperationDialog):
 class ClimatePopup(OperationDialog):
     def __init__(self, main_window):
         super().__init__(main_window)
-        self.add_float_option("Pole Temperature", -100, 100, -33)
-        self.add_float_option("Equator Temperature", -100, 100, 27)
+        self.add_float_option("Pole Temperature", -100, 100, -35)
+        self.add_float_option("Equator Temperature", -100, 100, 25)
         self.layout.addWidget(self.buttonBox)
         self.route = "calculate_climate"
 
