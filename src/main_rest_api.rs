@@ -302,29 +302,20 @@ fn erosion(store: &State<MapStore>) -> Json<Message> {
         CompleteMapEnum::Globe(cmap) => {
             let cmap2 = cmap.clone();
             let cmap3 = HydraulicErosion::new(4).apply(&cmap2);
-            let cmap4 = DefineCoastline{}.apply(&cmap3);
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Globe(cmap4),
-            );
+            let cmap4 = DefineCoastline {}.apply(&cmap3);
+            locked_store.insert(key, CompleteMapEnum::Globe(cmap4));
         }
         CompleteMapEnum::Cylinder(cmap) => {
             let cmap2 = cmap.clone();
             let cmap3 = HydraulicErosion::new(4).apply(&cmap2);
-            let cmap4 = DefineCoastline{}.apply(&cmap3);
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Cylinder(cmap4),
-            );
+            let cmap4 = DefineCoastline {}.apply(&cmap3);
+            locked_store.insert(key, CompleteMapEnum::Cylinder(cmap4));
         }
         CompleteMapEnum::Flat(cmap) => {
             let cmap2 = cmap.clone();
             let cmap3 = HydraulicErosion::new(4).apply(&cmap2);
-            let cmap4 = DefineCoastline{}.apply(&cmap3);
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Flat(cmap4),
-            );
+            let cmap4 = DefineCoastline {}.apply(&cmap3);
+            locked_store.insert(key, CompleteMapEnum::Flat(cmap4));
         }
     };
     Json(Message {
@@ -345,19 +336,19 @@ fn resize(input: Json<Resize>, store: &State<MapStore>) -> Json<Message> {
         CompleteMapEnum::Globe(cmap) => {
             let cmap2 = cmap.clone();
             let cmap3 = input.apply(&cmap2);
-            let cmap4 = DefineCoastline{}.apply(&cmap3);
+            let cmap4 = DefineCoastline {}.apply(&cmap3);
             locked_store.insert(key, CompleteMapEnum::Globe(cmap4));
         }
         CompleteMapEnum::Cylinder(cmap) => {
             let cmap2 = cmap.clone();
             let cmap3 = input.apply(&cmap2);
-            let cmap4 = DefineCoastline{}.apply(&cmap3);
+            let cmap4 = DefineCoastline {}.apply(&cmap3);
             locked_store.insert(key, CompleteMapEnum::Cylinder(cmap4));
         }
         CompleteMapEnum::Flat(cmap) => {
             let cmap2 = cmap.clone();
             let cmap3 = input.apply(&cmap2);
-            let cmap4 = DefineCoastline{}.apply(&cmap3);
+            let cmap4 = DefineCoastline {}.apply(&cmap3);
             locked_store.insert(key, CompleteMapEnum::Flat(cmap4));
         }
     };
@@ -417,10 +408,10 @@ fn post_calculate_climate(
     };
     let precipitation_percentiles = vec![
         (15.0, 0),
-        (20.0, 30),
-        (25.0, 40),
-        (35.0, 50),
-        (65.0, 70),
+        (18.0, 30),
+        (22.0, 40),
+        (30.0, 50),
+        (55.0, 70),
         (88.0, 150),
         (100.0, 250),
     ];

@@ -6,6 +6,7 @@ pub mod mountain_img_layer;
 pub mod parallels_meridians_layer;
 pub mod partial_map_layer;
 pub mod projection;
+pub mod relief_shadow;
 pub mod rhumb_lines;
 pub mod rivers_layer;
 pub mod satellite;

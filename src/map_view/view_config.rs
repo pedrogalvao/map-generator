@@ -26,6 +26,7 @@ use super::{
     parallels_meridians_layer::ParallelsMeridiansLayer,
     partial_map_layer::PartialMapLayer,
     projection::projection::Projection,
+    relief_shadow::ReliefShadowLayer,
     rhumb_lines::RhumbLinesLayer,
     rivers_layer::RiversLayer,
     satellite::SatelliteLayer,
@@ -165,6 +166,9 @@ pub fn create_view<P: Projection, S: MapShape + 'static>(
             }
             "satellite" => {
                 mv.layers.push(Box::new(SatelliteLayer {}));
+            }
+            "relief_shadow" => {
+                mv.layers.push(Box::new(ReliefShadowLayer {}));
             }
             _ => {
                 dbg!("Error: invalid layer name:", layer.as_str());

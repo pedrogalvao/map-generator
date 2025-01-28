@@ -1,7 +1,7 @@
 
 PROJECTIONS = ["mollweide","equirectangular", "azimuthal", "double azimuthal", "orthographic", "double orthographic", "mercator", "pseudocylindrical"]
 # LAYERS = ["Climate", "Countries", "Ice Caps", "Plates", "Demographics", "Annual Temperature"]
-LAYERS = ["Satellite", "Climate", "Plates", "Annual Precipitation", "Rivers", "Temperature", "Continentality", "Contour", "Mountains", "Trees", "Rhumb Lines", "Parallels and Meridians", "Paper Texture"]
+LAYERS = ["Satellite", "Climate", "Relief Shadow", "Plates", "Annual Precipitation", "Rivers", "Temperature", "Continentality", "Contour", "Mountains", "Trees", "Rhumb Lines", "Parallels and Meridians", "Paper Texture"]
 
 COLOR_SCHEMES = {
     "None": None,
