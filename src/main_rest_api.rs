@@ -37,6 +37,32 @@ enum CompleteMapEnum {
 
 type MapStore = Mutex<HashMap<String, CompleteMapEnum>>;
 
+macro_rules! apply_operation {
+    ($pipeline_step:expr, $key:expr, $store:expr) => {{
+        let mut locked_store = $store.lock().unwrap();
+        let Some(cmap_enum): Option<CompleteMapEnum> = locked_store.remove(&String::from(""))
+        else {
+            return Json(Message {
+                message: format!("no map found"),
+            });
+        };
+        match cmap_enum {
+            CompleteMapEnum::Globe(cmap) => {
+                locked_store.insert(
+                    $key,
+                    CompleteMapEnum::Globe($pipeline_step.apply(&cmap.clone())),
+                );
+            }
+            CompleteMapEnum::Cylinder(cmap) => {
+                locked_store.insert($key, CompleteMapEnum::Cylinder($pipeline_step.apply(&cmap)));
+            }
+            CompleteMapEnum::Flat(cmap) => {
+                locked_store.insert($key, CompleteMapEnum::Flat($pipeline_step.apply(&cmap)));
+            }
+        };
+    }};
+}
+
 fn generate_map(config: &Configuration, store: &State<MapStore>) {
     let start = Instant::now();
     macro_rules! generate_map_with_shape {
@@ -216,46 +242,22 @@ fn load_map(input: Json<LoadConfig>, store: &State<MapStore>) -> Json<Message> {
 #[post("/add_noise", format = "json")]
 fn add_noise(store: &State<MapStore>) -> Json<Message> {
     let key = String::from("");
-    let mut locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&key).clone() else {
-        return Json(Message {
-            message: format!("no map found"),
-        });
-    };
-    match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => {
-            let cmap2 = cmap.clone();
-            let cmap2 = HeightNoise::new(rand::random(), 30.0, 70.0).apply(&cmap2);
-            let cmap2 = HeightNoise::new(rand::random(), 60.0, 70.0).apply(&cmap2);
-            let cmap2 = HeightNoise::new(rand::random(), 100.0, 40.0).apply(&cmap2);
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Globe(HeightNoise::new(rand::random(), 200.0, 20.0).apply(&cmap2)),
-            );
-        }
-        CompleteMapEnum::Cylinder(cmap) => {
-            let cmap2 = cmap.clone();
-            let cmap2 = HeightNoise::new(rand::random(), 30.0, 70.0).apply(&cmap2);
-            let cmap2 = HeightNoise::new(rand::random(), 60.0, 70.0).apply(&cmap2);
-            let cmap2 = HeightNoise::new(rand::random(), 100.0, 40.0).apply(&cmap2);
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Cylinder(
-                    HeightNoise::new(rand::random(), 200.0, 20.0).apply(&cmap2),
-                ),
-            );
-        }
-        CompleteMapEnum::Flat(cmap) => {
-            let cmap2 = cmap.clone();
-            let cmap2 = HeightNoise::new(rand::random(), 30.0, 70.0).apply(&cmap2);
-            let cmap2 = HeightNoise::new(rand::random(), 60.0, 70.0).apply(&cmap2);
-            let cmap2 = HeightNoise::new(rand::random(), 100.0, 40.0).apply(&cmap2);
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Flat(HeightNoise::new(rand::random(), 200.0, 20.0).apply(&cmap2)),
-            );
-        }
-    };
+    apply_operation!(
+        HeightNoise::new(rand::random(), 30.0, 70.0),
+        key.clone(),
+        store
+    );
+    apply_operation!(
+        HeightNoise::new(rand::random(), 60.0, 70.0),
+        key.clone(),
+        store
+    );
+    apply_operation!(
+        HeightNoise::new(rand::random(), 100.0, 40.0),
+        key.clone(),
+        store
+    );
+    apply_operation!(HeightNoise::new(rand::random(), 200.0, 20.0), key, store);
     Json(Message {
         message: "Successfully added noise".to_string(),
     })
@@ -264,26 +266,7 @@ fn add_noise(store: &State<MapStore>) -> Json<Message> {
 #[post("/smooth", format = "json")]
 fn smooth(store: &State<MapStore>) -> Json<Message> {
     let key = String::from("");
-    let mut locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&key).clone() else {
-        return Json(Message {
-            message: format!("no map found"),
-        });
-    };
-    match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(key, CompleteMapEnum::Globe(Smooth::new().apply(&cmap2)));
-        }
-        CompleteMapEnum::Cylinder(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(key, CompleteMapEnum::Cylinder(Smooth::new().apply(&cmap2)));
-        }
-        CompleteMapEnum::Flat(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(key, CompleteMapEnum::Flat(Smooth::new().apply(&cmap2)));
-        }
-    };
+    apply_operation!(Smooth::new(), key, store);
     Json(Message {
         message: "Successfully applied smooth".to_string(),
     })
@@ -292,32 +275,8 @@ fn smooth(store: &State<MapStore>) -> Json<Message> {
 #[post("/erosion", format = "json")]
 fn erosion(store: &State<MapStore>) -> Json<Message> {
     let key = String::from("");
-    let mut locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&key).clone() else {
-        return Json(Message {
-            message: format!("no map found"),
-        });
-    };
-    match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => {
-            let cmap2 = cmap.clone();
-            let cmap3 = HydraulicErosion::new(4).apply(&cmap2);
-            let cmap4 = DefineCoastline {}.apply(&cmap3);
-            locked_store.insert(key, CompleteMapEnum::Globe(cmap4));
-        }
-        CompleteMapEnum::Cylinder(cmap) => {
-            let cmap2 = cmap.clone();
-            let cmap3 = HydraulicErosion::new(4).apply(&cmap2);
-            let cmap4 = DefineCoastline {}.apply(&cmap3);
-            locked_store.insert(key, CompleteMapEnum::Cylinder(cmap4));
-        }
-        CompleteMapEnum::Flat(cmap) => {
-            let cmap2 = cmap.clone();
-            let cmap3 = HydraulicErosion::new(4).apply(&cmap2);
-            let cmap4 = DefineCoastline {}.apply(&cmap3);
-            locked_store.insert(key, CompleteMapEnum::Flat(cmap4));
-        }
-    };
+    apply_operation!(HydraulicErosion::new(4), key.clone(), store);
+    apply_operation!(DefineCoastline {}, key, store);
     Json(Message {
         message: "Successfully added erosion".to_string(),
     })
@@ -326,32 +285,8 @@ fn erosion(store: &State<MapStore>) -> Json<Message> {
 #[post("/resize", format = "json", data = "<input>")]
 fn resize(input: Json<Resize>, store: &State<MapStore>) -> Json<Message> {
     let key = String::from("");
-    let mut locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&key).clone() else {
-        return Json(Message {
-            message: format!("no map found"),
-        });
-    };
-    match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => {
-            let cmap2 = cmap.clone();
-            let cmap3 = input.apply(&cmap2);
-            let cmap4 = DefineCoastline {}.apply(&cmap3);
-            locked_store.insert(key, CompleteMapEnum::Globe(cmap4));
-        }
-        CompleteMapEnum::Cylinder(cmap) => {
-            let cmap2 = cmap.clone();
-            let cmap3 = input.apply(&cmap2);
-            let cmap4 = DefineCoastline {}.apply(&cmap3);
-            locked_store.insert(key, CompleteMapEnum::Cylinder(cmap4));
-        }
-        CompleteMapEnum::Flat(cmap) => {
-            let cmap2 = cmap.clone();
-            let cmap3 = input.apply(&cmap2);
-            let cmap4 = DefineCoastline {}.apply(&cmap3);
-            locked_store.insert(key, CompleteMapEnum::Flat(cmap4));
-        }
-    };
+    apply_operation!(input, key.clone(), store);
+    apply_operation!(DefineCoastline {}, key, store);
     Json(Message {
         message: "Successfully resized".to_string(),
     })
@@ -360,35 +295,7 @@ fn resize(input: Json<Resize>, store: &State<MapStore>) -> Json<Message> {
 #[post("/translation_noise", format = "json")]
 fn translation_noise(store: &State<MapStore>) -> Json<Message> {
     let key = String::from("");
-    let mut locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&key).clone() else {
-        return Json(Message {
-            message: format!("no map found"),
-        });
-    };
-    match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Globe(TranslationNoise::new(rand::random()).apply(&cmap2)),
-            );
-        }
-        CompleteMapEnum::Cylinder(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Cylinder(TranslationNoise::new(rand::random()).apply(&cmap2)),
-            );
-        }
-        CompleteMapEnum::Flat(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Flat(TranslationNoise::new(rand::random()).apply(&cmap2)),
-            );
-        }
-    };
+    apply_operation!(TranslationNoise::new(rand::random()), key, store);
     Json(Message {
         message: "Successfully added erosion".to_string(),
     })
@@ -400,12 +307,6 @@ fn post_calculate_climate(
     store: &State<MapStore>,
 ) -> Json<Message> {
     let key = String::from("");
-    let mut locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&key).clone() else {
-        return Json(Message {
-            message: format!("no map found"),
-        });
-    };
     let precipitation_percentiles = vec![
         (15.0, 0),
         (18.0, 30),
@@ -415,50 +316,12 @@ fn post_calculate_climate(
         (88.0, 150),
         (100.0, 250),
     ];
-    match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Globe(
-                    CalculateClimate::new(
-                        &precipitation_percentiles,
-                        input.equator_temperature,
-                        input.pole_temperature,
-                    )
-                    .apply(&cmap2),
-                ),
-            );
-        }
-        CompleteMapEnum::Cylinder(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Cylinder(
-                    CalculateClimate::new(
-                        &precipitation_percentiles,
-                        input.equator_temperature,
-                        input.pole_temperature,
-                    )
-                    .apply(&cmap2),
-                ),
-            );
-        }
-        CompleteMapEnum::Flat(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Flat(
-                    CalculateClimate::new(
-                        &precipitation_percentiles,
-                        input.equator_temperature,
-                        input.pole_temperature,
-                    )
-                    .apply(&cmap2),
-                ),
-            );
-        }
-    };
+    let operation = CalculateClimate::new(
+        &precipitation_percentiles,
+        input.equator_temperature,
+        input.pole_temperature,
+    );
+    apply_operation!(operation, key, store);
     Json(Message {
         message: "Successfully added erosion".to_string(),
     })
@@ -474,38 +337,8 @@ fn adjust_water_percentage(
     store: &State<MapStore>,
 ) -> Json<Message> {
     let key = String::from("");
-    let mut locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&key).clone() else {
-        return Json(Message {
-            message: format!("no map found"),
-        });
-    };
-
-    match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Globe(DefineCoastline {}.apply(&water_percentage.apply(&cmap2))),
-            );
-        }
-        CompleteMapEnum::Cylinder(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Cylinder(
-                    DefineCoastline {}.apply(&water_percentage.apply(&cmap2)),
-                ),
-            );
-        }
-        CompleteMapEnum::Flat(cmap) => {
-            let cmap2 = cmap.clone();
-            locked_store.insert(
-                key,
-                CompleteMapEnum::Flat(DefineCoastline {}.apply(&water_percentage.apply(&cmap2))),
-            );
-        }
-    };
+    apply_operation!(water_percentage, key.clone(), store);
+    apply_operation!(DefineCoastline {}, key, store);
     Json(Message {
         message: "Successfully added erosion".to_string(),
     })
