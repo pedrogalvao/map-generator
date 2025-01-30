@@ -27,6 +27,20 @@ class NewViewMenu(QDialog):
 
         self.left_layout = QFormLayout(self)
 
+        def req_size():
+            headers = {'Content-Type': 'application/json'}
+            json_data = json.dumps({})
+            print(json_data)
+            response = requests.get(self.main_window.backend_address + "get_size", data=json_data, headers=headers)
+            print(response)
+            print(json.loads(response.text))
+            return json.loads(response.text)
+        
+        size = req_size()
+        print()
+        width = size["width"]
+        height = size["height"]
+
         self.templates_combobox = QComboBox()
         self.templates_combobox.addItems(["Custom", "Atlas Height", "Orthographic Height", "Climate", "Old Azimuthal", "Old Equirectangular"])
         self.templates_combobox.currentTextChanged.connect(self.choose_template)
@@ -41,12 +55,12 @@ class NewViewMenu(QDialog):
 
         self.width_input = QSpinBox()
         self.width_input.setRange(10, 10000)
-        self.width_input.setValue(1000)
+        self.width_input.setValue(width)
         self.left_layout.addRow("Width", self.width_input)
 
         self.height_input = QSpinBox()
         self.height_input.setRange(10, 5000)
-        self.height_input.setValue(500)
+        self.height_input.setValue(height)
         self.left_layout.addRow("Height", self.height_input)
 
         self.parallels_interval_input = QSpinBox()

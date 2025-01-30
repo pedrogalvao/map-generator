@@ -50,7 +50,7 @@ macro_rules! apply_operation {
             CompleteMapEnum::Globe(cmap) => {
                 locked_store.insert(
                     $key,
-                    CompleteMapEnum::Globe($pipeline_step.apply(&cmap.clone())),
+                    CompleteMapEnum::Globe($pipeline_step.apply(&cmap)),
                 );
             }
             CompleteMapEnum::Cylinder(cmap) => {
@@ -344,6 +344,47 @@ fn adjust_water_percentage(
     })
 }
 
+#[derive(Serialize)]
+struct Dimensions {
+    width: usize,
+    height: usize
+}
+
+#[get("/get_size", format = "json")]
+fn get_size(
+    store: &State<MapStore>,
+) -> Json<Dimensions> {
+    let key = String::from("");
+    let locked_store = store.lock().unwrap();
+    let Some(cmap_enum) = &locked_store.get(&key)
+    else {
+        return Json(Dimensions {
+            width: 0,
+            height: 0
+        })
+    };
+    match cmap_enum {
+        CompleteMapEnum::Globe(cmap) => {
+            Json(Dimensions {
+                width: 2*cmap.height.values.len(),
+                height: cmap.height.values.len()
+            })
+        }
+        CompleteMapEnum::Cylinder(cmap) => {
+            Json(Dimensions {
+                width: cmap.height.values[0].len(),
+                height: cmap.height.values.len()
+            })
+        }
+        CompleteMapEnum::Flat(cmap) => {
+            Json(Dimensions {
+                width: cmap.height.values[0].len(),
+                height: cmap.height.values.len()
+            })
+        }
+    }
+}
+
 #[launch]
 fn rocket() -> _ {
     rocket::build()
@@ -363,7 +404,8 @@ fn rocket() -> _ {
                 translation_noise,
                 adjust_water_percentage,
                 resize,
-                post_calculate_climate
+                post_calculate_climate,
+                get_size
             ],
         )
 }
