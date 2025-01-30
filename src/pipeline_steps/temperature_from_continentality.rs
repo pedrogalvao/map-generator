@@ -77,6 +77,9 @@ impl TemperatureFromContinentality {
                         }
                     }
                 }
+                if height >= 0 && latitude.abs() >= 60.0 {
+                    temperature -= ((90.0 - 60.0) / 30.0) * continentality as f32 / 2.0;
+                }
                 temperature_map.values[i][j] = temperature;
             }
         }
