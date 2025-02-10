@@ -28,15 +28,15 @@ class TopMenuBar(QMenuBar):
 
 
         add_erosion_action = QAction("Add Erosion", self.main_window)
-        add_erosion_action.triggered.connect(erosion_request)
+        add_erosion_action.triggered.connect(lambda : erosion_request(self.main_window.selected_world()))
         edit_menu.addAction(add_erosion_action)
 
         add_noise_action = QAction("Add Noise", self.main_window)
-        add_noise_action.triggered.connect(add_noise_request)
+        add_noise_action.triggered.connect(lambda : add_noise_request(self.main_window.selected_world()))
         edit_menu.addAction(add_noise_action)
         
         add_translation_noise_action = QAction("Add Translation Noise", self.main_window)
-        add_translation_noise_action.triggered.connect(translation_noise_request)
+        add_translation_noise_action.triggered.connect(lambda : translation_noise_request(self.main_window.selected_world()))
         edit_menu.addAction(add_translation_noise_action)
 
         sea_level_action = QAction("Change Sea Level", self.main_window)
@@ -44,7 +44,7 @@ class TopMenuBar(QMenuBar):
         edit_menu.addAction(sea_level_action)
 
         smooth_action = QAction("Smooth", self.main_window)
-        smooth_action.triggered.connect(smooth_request)
+        smooth_action.triggered.connect(lambda : smooth_request(self.main_window.selected_world()))
         edit_menu.addAction(smooth_action)
 
         resize_action = QAction("Resize", self.main_window)
@@ -60,5 +60,5 @@ class TopMenuBar(QMenuBar):
         view_menu.addAction(add_view_action)
 
         open_view_action = QAction("Open View Directory", self)
-        open_view_action.triggered.connect(self.main_window.view_side_menu.open_view_dir)
+        open_view_action.triggered.connect(lambda : self.main_window.tabs.currentWidget().view_side_menu.open_view_dir())
         view_menu.addAction(open_view_action)

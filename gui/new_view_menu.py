@@ -29,7 +29,7 @@ class NewViewMenu(QDialog):
 
         def req_size():
             headers = {'Content-Type': 'application/json'}
-            json_data = json.dumps({})
+            json_data = json.dumps({"world_name": self.main_window.selected_world()})
             print(json_data)
             response = requests.get(self.main_window.backend_address + "get_size", data=json_data, headers=headers)
             print(response)
@@ -307,14 +307,18 @@ class NewViewMenu(QDialog):
             "parallels_color": str(self.parallels_color),
             "height_colors": COLOR_SCHEMES[self.height_color_combobox.currentText()]
         }
-        print(view_config)
+        req_data = {
+            "world_name":self.main_window.selected_world(),
+            "params":view_config
+        }
+        print(req_data)
         headers = {'Content-Type': 'application/json'}
-        json_data = json.dumps(view_config)
+        json_data = json.dumps(req_data)
         response = requests.get("http://127.0.0.1:8000/draw", data=json_data, headers=headers)
         print(f'View Response status code: {response.status_code}')
         print(f'View Response JSON: {response.json()}')
-        self.main_window.load_images("out/" + self.name_input.text())
-        self.main_window.view_side_menu.add_view_option(self.name_input.text())
-        self.main_window.view_side_menu.select_view(self.name_input.text())
+        self.main_window.tabs.currentWidget().load_images("out/" + self.name_input.text())
+        self.main_window.tabs.currentWidget().view_side_menu.add_view_option(self.name_input.text())
+        self.main_window.tabs.currentWidget().view_side_menu.select_view(self.name_input.text())
         self.accept()
 

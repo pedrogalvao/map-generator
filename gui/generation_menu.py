@@ -186,8 +186,11 @@ class GenerationMenu(QDialog):
         config["erosion_iterations"] = self.erosion_input.value()
         config["hotspots"] = 50 if self.hotspots_checkbox.isChecked() else 0
 
-        print(config)
-        json_data = json.dumps(config)
+        req_data = {
+            "world_name": self.seed_input.text(),
+            "world_config": config
+        }
+        json_data = json.dumps(req_data)
         return json_data
 
     def send_request_thread(self):
@@ -222,7 +225,6 @@ class GenerationMenu(QDialog):
                 if is_empty_image(last_image):
                     sleep(0.3)
                     continue
-                # for view in self.main_window.images:
                 self.main_window.current_projection = "pipeline"
                 self.main_window.images["pipeline"] = [last_image]
                 self.image_loaded.emit(last_image)
@@ -232,10 +234,10 @@ class GenerationMenu(QDialog):
         print("count:", count)
     
     def send_request(self):
+        self.main_window.new_tab(self.seed_input.text())
         self.done = False
-        self.image_loaded.connect(self.main_window.display_image)
+        self.image_loaded.connect(lambda : self.main_window.tabs.currentWidget().display_image())
         t1 = Thread(target=self.send_request_thread, args=[])
-        # self.main_window.start_loading_images()
         t2 = Thread(target=self.display_pipeline_images_thread, args=[])
         t2.start()
         t1.start()

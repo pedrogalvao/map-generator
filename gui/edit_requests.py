@@ -8,24 +8,40 @@ import requests
 BACKEND_ADDRESS = "http://127.0.0.1:8000/"
 
 
-def translation_noise_request():
+def translation_noise_request(world_name):
     headers = {'Content-Type': 'application/json'}
-    response = requests.post(BACKEND_ADDRESS + "translation_noise", headers=headers)
+    req_data = {
+        "world_name": world_name
+    }
+    json_data = json.dumps(req_data)
+    response = requests.post(BACKEND_ADDRESS + "translation_noise", data=json_data, headers=headers)
     print(f'Translation Noise Response status code: {response.status_code}')
 
-def erosion_request():
+def erosion_request(world_name):
     headers = {'Content-Type': 'application/json'}
-    response = requests.post(BACKEND_ADDRESS + "erosion", headers=headers)
+    req_data = {
+        "world_name": world_name
+    }
+    json_data = json.dumps(req_data)
+    response = requests.post(BACKEND_ADDRESS + "erosion", data=json_data, headers=headers)
     print(f'Erosion Response status code: {response.status_code}')
 
-def smooth_request():
+def smooth_request(world_name):
     headers = {'Content-Type': 'application/json'}
-    response = requests.post(BACKEND_ADDRESS + "smooth", headers=headers)
+    req_data = {
+        "world_name": world_name
+    }
+    json_data = json.dumps(req_data)
+    response = requests.post(BACKEND_ADDRESS + "smooth", data=json_data, headers=headers)
     print(f'Smooth Response status code: {response.status_code}')
 
-def add_noise_request():
+def add_noise_request(world_name):
     headers = {'Content-Type': 'application/json'}
-    response = requests.post(BACKEND_ADDRESS + "add_noise", headers=headers)
+    req_data = {
+        "world_name": world_name
+    }
+    json_data = json.dumps(req_data)
+    response = requests.post(BACKEND_ADDRESS + "add_noise", data=json_data, headers=headers)
     print(f'Add Noise Response status code: {response.status_code}')
 
 
@@ -68,7 +84,11 @@ class OperationDialog(QDialog):
         options_values = {}
         for k in self.options:
             options_values[k.lower().replace(" ", "_")] = self.options[k].value()
-        json_data = json.dumps(options_values)
+        req_data = {
+            "world_name": self.main_window.selected_world(),
+            "params": options_values
+        }
+        json_data = json.dumps(req_data)
         print(json_data)
 
         response = requests.post(self.main_window.backend_address + self.route, data=json_data, headers=headers)

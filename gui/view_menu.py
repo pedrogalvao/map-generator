@@ -4,9 +4,10 @@ from PyQt5.QtGui import QCursor
 
 
 class ViewMenu(QFrame):
-    def __init__(self, main_window):
-        super().__init__()
+    def __init__(self, main_window, world_tab):
+        super().__init__(world_tab)
         self.main_window = main_window
+        self.world_tab = world_tab
         self.setStyleSheet("background-color: #cccccc;")
         self.menu_layout = QVBoxLayout()
         style = """
@@ -50,7 +51,7 @@ class ViewMenu(QFrame):
     def open_view_dir(self):
         directory = QFileDialog.getExistingDirectory(self, "Select Directory", ".")
         if directory:
-            self.main_window.directory = ""
+            self.world_tab.directory = ""
             self.main_window.load_images(directory)
             view_name = directory.split("/")[-1]
             self.view_options[view_name] = QPushButton(view_name, self)
@@ -98,4 +99,4 @@ class ViewMenu(QFrame):
         for button in self.view_options.values():
             button.setStyleSheet(style_not_selected)
         self.view_options[view_name].setStyleSheet(style_selected)
-        self.main_window.select_view(view_name)
+        self.world_tab.select_view(view_name)

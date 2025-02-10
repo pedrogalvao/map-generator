@@ -40,18 +40,14 @@ type MapStore = Mutex<HashMap<String, CompleteMapEnum>>;
 macro_rules! apply_operation {
     ($pipeline_step:expr, $key:expr, $store:expr) => {{
         let mut locked_store = $store.lock().unwrap();
-        let Some(cmap_enum): Option<CompleteMapEnum> = locked_store.remove(&String::from(""))
-        else {
+        let Some(cmap_enum): Option<CompleteMapEnum> = locked_store.remove(&$key) else {
             return Json(Message {
                 message: format!("no map found"),
             });
         };
         match cmap_enum {
             CompleteMapEnum::Globe(cmap) => {
-                locked_store.insert(
-                    $key,
-                    CompleteMapEnum::Globe($pipeline_step.apply(&cmap)),
-                );
+                locked_store.insert($key, CompleteMapEnum::Globe($pipeline_step.apply(&cmap)));
             }
             CompleteMapEnum::Cylinder(cmap) => {
                 locked_store.insert($key, CompleteMapEnum::Cylinder($pipeline_step.apply(&cmap)));
@@ -63,30 +59,40 @@ macro_rules! apply_operation {
     }};
 }
 
-fn generate_map(config: &Configuration, store: &State<MapStore>) {
+#[derive(Deserialize)]
+struct RequestData<T> {
+    world_name: String,
+    params: T,
+}
+
+fn generate_map(req_data: &GenerationRequest, store: &State<MapStore>) {
     let start = Instant::now();
     macro_rules! generate_map_with_shape {
         ($shape:ty, $cmap_enum:ident, $config:expr) => {{
-            let cmap: CompleteMap<$shape> = standard_recipe(&config).execute();
+            let cmap: CompleteMap<$shape> = standard_recipe(&req_data.world_config).execute();
             let end = Instant::now();
             let generation_time = (end - start).as_secs_f32();
             println!("generation time: {generation_time}");
             let _ = cmap.save("map.bin");
-            // draw_old_style(&cmap);
-            store
-                .lock()
-                .unwrap()
-                .insert(String::from(""), CompleteMapEnum::$cmap_enum(cmap));
+            store.lock().unwrap().insert(
+                req_data.world_name.clone(),
+                CompleteMapEnum::$cmap_enum(cmap),
+            );
         }};
     }
-    match config.shape {
+    match req_data.world_config.shape {
         ShapeEnum::Cylinder => generate_map_with_shape!(Cylinder, Cylinder, config),
         ShapeEnum::Globe => generate_map_with_shape!(Globe, Globe, config),
         ShapeEnum::Flat => generate_map_with_shape!(Flat, Flat, config),
     }
 }
 
-fn generate_map_from_image(filepath: String, shape: &ShapeEnum, store: &State<MapStore>) {
+fn generate_map_from_image(
+    world_name: String,
+    filepath: String,
+    shape: &ShapeEnum,
+    store: &State<MapStore>,
+) {
     let start = Instant::now();
     macro_rules! generate_map_with_shape {
         ($shape:ty, $cmap_enum:ident, $config:expr) => {{
@@ -99,7 +105,7 @@ fn generate_map_from_image(filepath: String, shape: &ShapeEnum, store: &State<Ma
             store
                 .lock()
                 .unwrap()
-                .insert(String::from(""), CompleteMapEnum::$cmap_enum(cmap));
+                .insert(world_name, CompleteMapEnum::$cmap_enum(cmap));
         }};
     }
     match shape {
@@ -109,26 +115,22 @@ fn generate_map_from_image(filepath: String, shape: &ShapeEnum, store: &State<Ma
     }
 }
 
-#[derive(Serialize)]
-#[serde(crate = "rocket::serde")]
-struct ImageMessage {
-    message: String,
-}
-
 #[get("/draw", format = "json", data = "<input>")]
-fn draw(input: Json<ViewConfiguration>, store: &State<MapStore>) -> Json<Message> {
-    let input_inner: ViewConfiguration = input.into_inner();
+fn draw(input: Json<RequestData<ViewConfiguration>>, store: &State<MapStore>) -> Json<Message> {
+    let req_params = input.into_inner();
+    let view_config: ViewConfiguration = req_params.params;
+    let key: String = req_params.world_name;
 
     let locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&String::from("")) else {
+    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&key) else {
         return Json(Message {
             message: format!("no map found"),
         });
     };
     match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => draw_with_config(cmap, &input_inner),
-        CompleteMapEnum::Cylinder(cmap) => draw_with_config(cmap, &input_inner),
-        CompleteMapEnum::Flat(cmap) => draw_with_config(cmap, &input_inner),
+        CompleteMapEnum::Globe(cmap) => draw_with_config(cmap, &view_config),
+        CompleteMapEnum::Cylinder(cmap) => draw_with_config(cmap, &view_config),
+        CompleteMapEnum::Flat(cmap) => draw_with_config(cmap, &view_config),
     }
     Json(Message {
         message: "Ok".to_string(),
@@ -137,20 +139,21 @@ fn draw(input: Json<ViewConfiguration>, store: &State<MapStore>) -> Json<Message
 
 #[get("/get_image", format = "json", data = "<input>")]
 fn get_image(
-    input: Json<ViewConfiguration>,
+    input: Json<RequestData<ViewConfiguration>>,
     store: &State<MapStore>,
 ) -> Option<(ContentType, Vec<u8>)> {
-    let input_inner: ViewConfiguration = input.into_inner();
+    let input_inner = input.into_inner();
 
     let locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&String::from("")) else {
+    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&input_inner.world_name)
+    else {
         return None;
     };
 
     let img = match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => img_from_config(cmap, &input_inner),
-        CompleteMapEnum::Cylinder(cmap) => img_from_config(cmap, &input_inner),
-        CompleteMapEnum::Flat(cmap) => img_from_config(cmap, &input_inner),
+        CompleteMapEnum::Globe(cmap) => img_from_config(cmap, &input_inner.params),
+        CompleteMapEnum::Cylinder(cmap) => img_from_config(cmap, &input_inner.params),
+        CompleteMapEnum::Flat(cmap) => img_from_config(cmap, &input_inner.params),
     };
 
     let mut buffer = Vec::new();
@@ -166,6 +169,7 @@ fn get_image(
 
 #[derive(Deserialize)]
 struct SaveInput {
+    world_name: String,
     path: String,
 }
 
@@ -174,7 +178,8 @@ fn save(input: Json<SaveInput>, store: &State<MapStore>) -> Json<Message> {
     let input_inner: SaveInput = input.into_inner();
 
     let locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&String::from("")) else {
+    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&input_inner.world_name)
+    else {
         return Json(Message {
             message: format!("no map found"),
         });
@@ -201,17 +206,25 @@ struct Message {
     message: String,
 }
 
+#[derive(Deserialize)]
+#[serde(crate = "rocket::serde")]
+struct GenerationRequest {
+    world_name: String,
+    world_config: Configuration,
+}
+
 #[post("/generate", format = "json", data = "<input>")]
-fn generate(input: Json<Configuration>, store: &State<MapStore>) -> Json<Message> {
-    let input_inner: Configuration = input.into_inner();
+fn generate(input: Json<GenerationRequest>, store: &State<MapStore>) -> Json<Message> {
+    let input_inner: GenerationRequest = input.into_inner();
     generate_map(&input_inner, store);
     Json(Message {
-        message: format!("Generated map {}", input_inner.seed),
+        message: format!("Generated map {}", input_inner.world_name),
     })
 }
 
 #[derive(Serialize, Deserialize)]
 struct LoadConfig {
+    world_name: String,
     file: String,
     shape: ShapeEnum,
 }
@@ -219,7 +232,12 @@ struct LoadConfig {
 #[post("/generate_from_image", format = "json", data = "<input>")]
 fn generate_from_image(input: Json<LoadConfig>, store: &State<MapStore>) -> Json<Message> {
     let input_inner: LoadConfig = input.into_inner();
-    generate_map_from_image(input_inner.file, &input_inner.shape, store);
+    generate_map_from_image(
+        input_inner.world_name,
+        input_inner.file,
+        &input_inner.shape,
+        store,
+    );
     Json(Message {
         message: format!("Loaded height map!"),
     })
@@ -233,15 +251,15 @@ fn load_map(input: Json<LoadConfig>, store: &State<MapStore>) -> Json<Message> {
     store
         .lock()
         .unwrap()
-        .insert(String::from(""), CompleteMapEnum::Globe(cmap));
+        .insert(input_inner.world_name, CompleteMapEnum::Globe(cmap));
     Json(Message {
         message: format!("Loaded {}!", filename),
     })
 }
 
-#[post("/add_noise", format = "json")]
-fn add_noise(store: &State<MapStore>) -> Json<Message> {
-    let key = String::from("");
+#[post("/add_noise", format = "json", data = "<input>")]
+fn add_noise(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Message> {
+    let key = input.into_inner().world_name;
     apply_operation!(
         HeightNoise::new(rand::random(), 30.0, 70.0),
         key.clone(),
@@ -257,24 +275,29 @@ fn add_noise(store: &State<MapStore>) -> Json<Message> {
         key.clone(),
         store
     );
-    apply_operation!(HeightNoise::new(rand::random(), 200.0, 20.0), key, store);
+    apply_operation!(
+        HeightNoise::new(rand::random(), 200.0, 20.0),
+        key.clone(),
+        store
+    );
+    apply_operation!(DefineCoastline {}, key, store);
     Json(Message {
         message: "Successfully added noise".to_string(),
     })
 }
 
-#[post("/smooth", format = "json")]
-fn smooth(store: &State<MapStore>) -> Json<Message> {
-    let key = String::from("");
+#[post("/smooth", format = "json", data = "<input>")]
+fn smooth(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Message> {
+    let key = input.into_inner().world_name;
     apply_operation!(Smooth::new(), key, store);
     Json(Message {
         message: "Successfully applied smooth".to_string(),
     })
 }
 
-#[post("/erosion", format = "json")]
-fn erosion(store: &State<MapStore>) -> Json<Message> {
-    let key = String::from("");
+#[post("/erosion", format = "json", data = "<input>")]
+fn erosion(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Message> {
+    let key = input.into_inner().world_name;
     apply_operation!(HydraulicErosion::new(4), key.clone(), store);
     apply_operation!(DefineCoastline {}, key, store);
     Json(Message {
@@ -283,18 +306,19 @@ fn erosion(store: &State<MapStore>) -> Json<Message> {
 }
 
 #[post("/resize", format = "json", data = "<input>")]
-fn resize(input: Json<Resize>, store: &State<MapStore>) -> Json<Message> {
-    let key = String::from("");
-    apply_operation!(input, key.clone(), store);
+fn resize(input: Json<RequestData<Resize>>, store: &State<MapStore>) -> Json<Message> {
+    let inner_input = input.into_inner();
+    let key = inner_input.world_name;
+    apply_operation!(inner_input.params, key.clone(), store);
     apply_operation!(DefineCoastline {}, key, store);
     Json(Message {
         message: "Successfully resized".to_string(),
     })
 }
 
-#[post("/translation_noise", format = "json")]
-fn translation_noise(store: &State<MapStore>) -> Json<Message> {
-    let key = String::from("");
+#[post("/translation_noise", format = "json", data = "<input>")]
+fn translation_noise(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Message> {
+    let key = input.into_inner().world_name;
     apply_operation!(TranslationNoise::new(rand::random()), key, store);
     Json(Message {
         message: "Successfully added erosion".to_string(),
@@ -303,10 +327,12 @@ fn translation_noise(store: &State<MapStore>) -> Json<Message> {
 
 #[post("/calculate_climate", format = "json", data = "<input>")]
 fn post_calculate_climate(
-    input: Json<ClimateConfiguration>,
+    input: Json<RequestData<ClimateConfiguration>>,
     store: &State<MapStore>,
 ) -> Json<Message> {
-    let key = String::from("");
+    let inner_input = input.into_inner();
+    let key = inner_input.world_name;
+    let climate_config = inner_input.params;
     let precipitation_percentiles = vec![
         (15.0, 0),
         (18.0, 30),
@@ -318,8 +344,8 @@ fn post_calculate_climate(
     ];
     let operation = CalculateClimate::new(
         &precipitation_percentiles,
-        input.equator_temperature,
-        input.pole_temperature,
+        climate_config.equator_temperature,
+        climate_config.pole_temperature,
     );
     apply_operation!(operation, key, store);
     Json(Message {
@@ -327,17 +353,14 @@ fn post_calculate_climate(
     })
 }
 
-#[post(
-    "/adjust_water_percentage",
-    format = "json",
-    data = "<water_percentage>"
-)]
+#[post("/adjust_water_percentage", format = "json", data = "<input>")]
 fn adjust_water_percentage(
-    water_percentage: Json<WaterLevel>,
+    input: Json<RequestData<WaterLevel>>,
     store: &State<MapStore>,
 ) -> Json<Message> {
-    let key = String::from("");
-    apply_operation!(water_percentage, key.clone(), store);
+    let input_inner = input.into_inner();
+    let key = input_inner.world_name;
+    apply_operation!(input_inner.params, key.clone(), store);
     apply_operation!(DefineCoastline {}, key, store);
     Json(Message {
         message: "Successfully added erosion".to_string(),
@@ -347,41 +370,37 @@ fn adjust_water_percentage(
 #[derive(Serialize)]
 struct Dimensions {
     width: usize,
-    height: usize
+    height: usize,
 }
 
-#[get("/get_size", format = "json")]
-fn get_size(
-    store: &State<MapStore>,
-) -> Json<Dimensions> {
-    let key = String::from("");
+#[derive(Deserialize)]
+struct BasicRequestParams {
+    world_name: String,
+}
+
+#[get("/get_size", format = "json", data = "<input>")]
+fn get_size(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Dimensions> {
+    let key = input.into_inner().world_name;
     let locked_store = store.lock().unwrap();
-    let Some(cmap_enum) = &locked_store.get(&key)
-    else {
+    let Some(cmap_enum) = &locked_store.get(&key) else {
         return Json(Dimensions {
             width: 0,
-            height: 0
-        })
+            height: 0,
+        });
     };
     match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => {
-            Json(Dimensions {
-                width: 2*cmap.height.values.len(),
-                height: cmap.height.values.len()
-            })
-        }
-        CompleteMapEnum::Cylinder(cmap) => {
-            Json(Dimensions {
-                width: cmap.height.values[0].len(),
-                height: cmap.height.values.len()
-            })
-        }
-        CompleteMapEnum::Flat(cmap) => {
-            Json(Dimensions {
-                width: cmap.height.values[0].len(),
-                height: cmap.height.values.len()
-            })
-        }
+        CompleteMapEnum::Globe(cmap) => Json(Dimensions {
+            width: 2 * cmap.height.values.len(),
+            height: cmap.height.values.len(),
+        }),
+        CompleteMapEnum::Cylinder(cmap) => Json(Dimensions {
+            width: cmap.height.values[0].len(),
+            height: cmap.height.values.len(),
+        }),
+        CompleteMapEnum::Flat(cmap) => Json(Dimensions {
+            width: cmap.height.values[0].len(),
+            height: cmap.height.values.len(),
+        }),
     }
 }
 
