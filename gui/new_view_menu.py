@@ -1,6 +1,8 @@
 import glob
 import json
 import os
+from threading import Thread
+from time import sleep
 from PIL import Image
 from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QHBoxLayout, QDialog, QColorDialog, QPushButton, QDoubleSpinBox, QDialogButtonBox, QComboBox, QFormLayout, QSpinBox, QCheckBox, QLineEdit
 from PyQt5.QtGui import QColor
@@ -311,13 +313,14 @@ class NewViewMenu(QDialog):
             "world_name":self.main_window.selected_world(),
             "params":view_config
         }
-        print(req_data)
-        headers = {'Content-Type': 'application/json'}
-        json_data = json.dumps(req_data)
-        response = requests.get("http://127.0.0.1:8000/draw", data=json_data, headers=headers)
-        print(f'View Response status code: {response.status_code}')
-        print(f'View Response JSON: {response.json()}')
-        self.main_window.tabs.currentWidget().load_images("out/" + self.name_input.text())
+        
+        view_name = self.name_input.text()
+        req_view_thread = Thread(target=self.main_window.tabs.currentWidget().request_view, args=[view_name, req_data])
+        req_view_thread.start()
+        
+        images = self.main_window.tabs.currentWidget().map_viewer.images
+        while view_name not in images or len(images[view_name].data) == 0:
+            sleep(0.2)
         self.main_window.tabs.currentWidget().map_viewer.view_side_menu.add_view_option(self.name_input.text())
         self.main_window.tabs.currentWidget().map_viewer.view_side_menu.select_view(self.name_input.text())
         self.accept()

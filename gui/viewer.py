@@ -1,11 +1,43 @@
+from threading import Thread
 from PyQt5.QtWidgets import QLabel, QSizePolicy
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QPoint
 import glob
 import re
 
+from sortedcontainers import SortedDict
+
 from view_menu import ViewMenu
 
+
+class ViewImages:
+
+    def __init__(self):
+        self.data = SortedDict()  # Automatically keeps keys sorted
+    
+    def add(self, rotation, pixmap):
+        self.data[rotation] = pixmap
+    
+    def get(self, number):
+        keys = self.data.keys()
+        if len(keys) == 0:
+            return QPixmap()
+        idx = self.data.bisect_left(number)
+
+        # Handle edge cases
+        if idx == 0:
+            return self.data[keys[0]]
+        if idx == len(keys):
+            return self.data[keys[-1]]
+
+        # Find closest key
+        before = keys[idx - 1]
+        after = keys[idx]
+
+        if abs(before - number) <= abs(after - number):
+            return self.data[before]
+        else:
+            return self.data[after]
 
 def natural_sort(file_paths):
     def atoi(text):
@@ -35,7 +67,7 @@ class MapViewer(QLabel):
         self.setFocusPolicy(Qt.StrongFocus)
         self.setFocus()
         self.images = {}
-        self.images[""] = [QPixmap("img/rose.png")]
+        self.images[""] = ViewImages()
         self.current_index = 0
         self.current_latitude = 0
         self.current_longitude = 0
@@ -48,7 +80,7 @@ class MapViewer(QLabel):
     def select_view(self, view_name:str):
         if len(self.images[view_name]) > 0:
             self.current_view = view_name
-            self.current_index %= len(self.images[view_name])
+            self.current_index %= 30 # len(self.images[view_name])
             self.image_center_x = self.current_image().width() / 2
             self.image_center_y = self.current_image().height() / 2
             self.display_image()
@@ -56,27 +88,30 @@ class MapViewer(QLabel):
             # TODO: display loading screen
             pass
 
-    def load_images(self, view:str):
-        print("Load:")
-        print(view + "/*.png")
-        img_paths = natural_sort(glob.glob(view + "/*.png"))
-        print(img_paths)
-        view_name = view.split("/")[-1]
-        self.images[view_name] = [QPixmap(image_path) for image_path in img_paths]
-        # self.images[projection] = [[[0 for _ in range(10)] for _ in range(10)] for _ in range(10)]
-        # for image_path in img_paths:
-        #     indexes = image_path.split("/")[-1].split(".")[0].split("-")
-        #     self.images[projection][int(indexes[0])][int(indexes[1])][int(indexes[2])] = QPixmap(image_path)
+    # def load_images_thread(self, view:str):
+    #     print("Load:")
+    #     print(view + "/*.png")
+    #     img_paths = natural_sort(glob.glob(view + "/*.png"))
+    #     print(img_paths)
+    #     view_name = view.split("/")[-1]
+    #     for image_path in img_paths:
+    #         self.images[view_name].append(QPixmap(image_path))
+
+    # def load_images(self, view:str):
+    #     view_name = view.split("/")[-1]
+    #     self.images[view_name] = []
+    #     t = Thread(target=self.load_images_thread, args=[view])
+    #     t.start()
 
     def current_image(self):
-        if self.current_index >= len(self.images[self.current_view]):
+        if self.current_index >= 30:
             self.current_index = 0
-        return self.images[self.current_view][self.current_index]
+        return self.images[self.current_view].get(self.current_index)
         # TODO
         return self.images[self.current_view][self.current_latitude][self.current_longitude][self.current_index_z]
 
     def display_image(self):
-        if self.images[self.current_view] and 0 <= self.current_index < len(self.images[self.current_view]):
+        if self.images[self.current_view] and 0 <= self.current_index < 30:
             if self.zoom_factor > 1:
                 width = self.current_image().width()
                 height = self.current_image().height()
