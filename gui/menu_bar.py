@@ -60,5 +60,5 @@ class TopMenuBar(QMenuBar):
         view_menu.addAction(add_view_action)
 
         open_view_action = QAction("Open View Directory", self)
-        open_view_action.triggered.connect(lambda : self.main_window.tabs.currentWidget().view_side_menu.open_view_dir())
+        open_view_action.triggered.connect(lambda : self.main_window.tabs.currentWidget().map_viewer.view_side_menu.open_view_dir())
         view_menu.addAction(open_view_action)

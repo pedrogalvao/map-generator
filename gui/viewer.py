@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt, QPoint
 import glob
 import re
 
+from view_menu import ViewMenu
+
 
 def natural_sort(file_paths):
     def atoi(text):
@@ -15,8 +17,10 @@ def natural_sort(file_paths):
     return sorted(file_paths, key=natural_keys)
 
 class MapViewer(QLabel):
-    def __init__(self):
+    def __init__(self, main_window):
         super().__init__()
+
+        self.view_side_menu = ViewMenu(main_window, self)
 
         self.setAlignment(Qt.AlignCenter)
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)

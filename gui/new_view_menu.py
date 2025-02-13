@@ -318,7 +318,7 @@ class NewViewMenu(QDialog):
         print(f'View Response status code: {response.status_code}')
         print(f'View Response JSON: {response.json()}')
         self.main_window.tabs.currentWidget().load_images("out/" + self.name_input.text())
-        self.main_window.tabs.currentWidget().view_side_menu.add_view_option(self.name_input.text())
-        self.main_window.tabs.currentWidget().view_side_menu.select_view(self.name_input.text())
+        self.main_window.tabs.currentWidget().map_viewer.view_side_menu.add_view_option(self.name_input.text())
+        self.main_window.tabs.currentWidget().map_viewer.view_side_menu.select_view(self.name_input.text())
         self.accept()
 
