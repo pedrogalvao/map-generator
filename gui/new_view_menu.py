@@ -32,12 +32,10 @@ class NewViewMenu(QDialog):
         def req_size():
             headers = {'Content-Type': 'application/json'}
             json_data = json.dumps({"world_name": self.main_window.selected_world()})
-            print(json_data)
             response = requests.get(self.main_window.backend_address + "get_size", data=json_data, headers=headers)
             return json.loads(response.text)
         
         size = req_size()
-        print()
         width = size["width"]
         height = size["height"]
 
@@ -150,7 +148,6 @@ class NewViewMenu(QDialog):
         self.land_color_button.setStyleSheet("background-color:" + self.land_color)
 
     def choose_template(self):
-        print("choose_template")
         self.center_latitude_input.setValue(0.0)
         self.rotation_input.setValue(0.0)
         if self.templates_combobox.currentText() == "Atlas Height":

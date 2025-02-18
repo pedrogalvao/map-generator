@@ -6,39 +6,8 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout, QWidget
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QBuffer, QIODevice
 import requests
-from sortedcontainers import SortedDict
 
-from viewer import MapViewer
-
-
-class ViewImages:
-
-    def __init__(self):
-        self.data = SortedDict()  # Automatically keeps keys sorted
-    
-    def add(self, rotation, pixmap):
-        self.data[rotation] = pixmap
-    
-    def get(self, number):
-        keys = self.data.keys()
-        if len(keys) == 0:
-            return QPixmap()
-        idx = self.data.bisect_left(number)
-
-        # Handle edge cases
-        if idx == 0:
-            return self.data[keys[0]]
-        if idx == len(keys):
-            return self.data[keys[-1]]
-
-        # Find closest key
-        before = keys[idx - 1]
-        after = keys[idx]
-
-        if abs(before - number) <= abs(after - number):
-            return self.data[before]
-        else:
-            return self.data[after]
+from viewer import MapViewer, ViewImages
 
 
 class WorldTab(QFrame):
@@ -64,7 +33,6 @@ class WorldTab(QFrame):
         print('request_view')
         self.map_viewer.images[view_name] = ViewImages()
         def request_image(req_data, req_number):
-            print(f'sending', req_number)
             headers = {'Content-Type': 'application/json'}
             json_data = json.dumps(req_data)
             response = requests.get("http://127.0.0.1:8000/get_image", data=json_data, headers=headers)
@@ -77,11 +45,8 @@ class WorldTab(QFrame):
             buffer.open(QIODevice.ReadOnly)
             pixmap.loadFromData(buffer.data())
 
-            print("before", len(self.map_viewer.images[view_name].data))
             self.map_viewer.images[view_name].add(req_number, pixmap)
-            print("after", len(self.map_viewer.images[view_name].data))
 
-        print('request_view - after def')
         n_sent_requests = 0
         for i in [0, 15, 25, 5, 20, 10]:
             rotation = (i * 360 / 30) % 360

@@ -2,7 +2,6 @@ import json
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QFileDialog, QTabWidget, QSplashScreen
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import Qt
 import re
 import subprocess
 import requests
@@ -12,8 +11,6 @@ from world_tab import WorldTab
 from menu_bar import TopMenuBar
 from new_view_menu import NewViewMenu
 
-
-IMAGES_DIR_PATH = "images/earth"
 
 
 def natural_sort(file_paths):
