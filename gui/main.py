@@ -7,7 +7,7 @@ import re
 import subprocess
 import requests
 
-from initial_menu import InitialMenu
+from initial_tab import InitialTab
 from world_tab import WorldTab
 from menu_bar import TopMenuBar
 from new_view_menu import NewViewMenu
@@ -63,6 +63,7 @@ class MapMaker(QMainWindow):
         """)
     
         main_layout.addWidget(self.tabs)
+        self.tabs.addTab(InitialTab(), "Welcome")
         self.setLayout(main_layout)
         self.setCentralWidget(self.tabs)
         self.setMenuBar(TopMenuBar(self))

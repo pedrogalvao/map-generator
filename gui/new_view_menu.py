@@ -34,8 +34,6 @@ class NewViewMenu(QDialog):
             json_data = json.dumps({"world_name": self.main_window.selected_world()})
             print(json_data)
             response = requests.get(self.main_window.backend_address + "get_size", data=json_data, headers=headers)
-            print(response)
-            print(json.loads(response.text))
             return json.loads(response.text)
         
         size = req_size()
