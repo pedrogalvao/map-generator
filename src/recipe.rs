@@ -255,14 +255,8 @@ pub fn standard_recipe<T: MapShape + 'static>(config: &Configuration) -> MapPipe
 
     if config.make_climate {
         map_pipeline.add_step(CalculateContinentality {});
-        // map_pipeline.add_step(DefineTemperature::new());
         map_pipeline.add_step(TemperatureFromContinentality::default());
-        map_pipeline.add_step(DefinePressure::new());
-        map_pipeline.add_step(DefineWindsGradient::new());
         map_pipeline.add_step(CalculatePrecipitation {});
-        map_pipeline.add_step(AdjustPrecipitationPercentiles::new(
-            &config.precipitation_percentiles,
-        ));
         map_pipeline.add_step(CalculateAnnualPrecipitation {});
         map_pipeline.add_step(DefineKoppenClimate {});
         map_pipeline.add_step(CreateRivers {});
