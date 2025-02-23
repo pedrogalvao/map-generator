@@ -121,7 +121,11 @@ class MapMaker(QMainWindow):
     def selected_world(self):
         if len(self.tabs) == 0:
             return None
-        return self.tabs.currentWidget().name
+        try:
+            return self.tabs.currentWidget().name
+        except AttributeError:
+            # Initial tab
+            return None
 
 def main():
     app = QApplication(sys.argv)
