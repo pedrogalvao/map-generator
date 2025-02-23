@@ -1,8 +1,6 @@
-from threading import Thread
 from PyQt5.QtWidgets import QLabel, QSizePolicy
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt, QPoint
-import glob
 import re
 
 from sortedcontainers import SortedDict
@@ -68,7 +66,6 @@ class MapViewer(QLabel):
         self.setFocus()
         self.images = {}
         self.images[""] = ViewImages()
-        self.current_index = 0
         self.current_latitude = 0
         self.current_longitude = 0
         self.current_index_z = 0
@@ -78,9 +75,8 @@ class MapViewer(QLabel):
         self.display_image()
 
     def select_view(self, view_name:str):
-        if len(self.images[view_name]) > 0:
+        if len(self.images[view_name].data) > 0:
             self.current_view = view_name
-            self.current_index %= 30 # len(self.images[view_name])
             self.image_center_x = self.current_image().width() / 2
             self.image_center_y = self.current_image().height() / 2
             self.display_image()
@@ -104,17 +100,12 @@ class MapViewer(QLabel):
     #     t.start()
 
     def current_image(self):
-        if self.current_index >= 30:
-            self.current_index = 0
-        return self.images[self.current_view].get(self.current_index)
+        return self.images[self.current_view].get(self.current_longitude)
         # TODO
         return self.images[self.current_view][self.current_latitude][self.current_longitude][self.current_index_z]
 
     def display_image(self):
-        if self.images[self.current_view] and 0 <= self.current_index < 30:
-            if self.current_image().width() == 0 or self.current_image().height() == 0:
-                # image not available yet
-                return
+        if self.images[self.current_view]:
             if self.zoom_factor > 1:
                 width = self.current_image().width()
                 height = self.current_image().height()
@@ -142,9 +133,9 @@ class MapViewer(QLabel):
     def keyPressEvent(self, event):
         match event.key():
             case Qt.Key_Right:
-                self.next_image()
+                self.rotate_east()
             case Qt.Key_Left:
-                self.previous_image()
+                self.rotate_west()
             case Qt.Key_Up | Qt.Key_Z:
                 self.image_center_y -= 20
                 self.display_image()
@@ -158,25 +149,27 @@ class MapViewer(QLabel):
                 self.image_center_x -= 20
                 self.display_image()
 
-    def next_image(self):
-        self.current_index += 1
-        self.current_index %= len(self.images[self.current_view])
+    def rotate_east(self):
+        self.current_longitude = (self.current_longitude + 5) % 360
+        if self.current_longitude > 180:
+            self.current_longitude -= 360
         self.display_image()
 
-    def previous_image(self):
-        self.current_index -= 1
-        self.current_index %= len(self.images[self.current_view])
+    def rotate_west(self):
+        self.current_longitude = (self.current_longitude - 5) % 360
+        if self.current_longitude > 180:
+            self.current_longitude -= 360
         self.display_image()
 
     def mousePressEvent(self, event):
         if not self.dragging and not self.dragging_right:
             if event.button() == Qt.LeftButton:
-                self.start_index = self.current_index
+                self.start_longitude = self.current_longitude
                 self.drag_start_position = event.pos()
                 self.last_mouse_position = self.drag_start_position
                 self.dragging = True
             elif event.button() == Qt.RightButton:
-                self.start_index = self.current_index
+                self.start_longitude = self.current_longitude
                 self.drag_start_position = event.pos()
                 self.last_mouse_position = self.drag_start_position
                 self.dragging_right = True
@@ -186,8 +179,10 @@ class MapViewer(QLabel):
             # rotate projection
             move = self.drag_start_position.x() - event.pos().x()
             width = self.frameGeometry().width()
-            self.current_index = self.start_index + int(move * 1.5 * len(self.images[self.current_view]) / (width * self.zoom_factor))
-            self.current_index %= len(self.images[self.current_view])
+            self.current_longitude = self.start_longitude + move * 360 / (width * self.zoom_factor)
+            self.current_longitude = self.current_longitude % 360
+            if self.current_longitude > 180:
+                self.current_longitude -= 360
             
             # move image up and down
             move_y = self.last_mouse_position.y() - event.pos().y()

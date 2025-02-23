@@ -32,14 +32,10 @@ class NewViewMenu(QDialog):
         def req_size():
             headers = {'Content-Type': 'application/json'}
             json_data = json.dumps({"world_name": self.main_window.selected_world()})
-            print(json_data)
             response = requests.get(self.main_window.backend_address + "get_size", data=json_data, headers=headers)
-            print(response)
-            print(json.loads(response.text))
             return json.loads(response.text)
         
         size = req_size()
-        print()
         width = size["width"]
         height = size["height"]
 
@@ -69,11 +65,6 @@ class NewViewMenu(QDialog):
         self.parallels_interval_input.setRange(0, 360)
         self.parallels_interval_input.setValue(30)
         self.left_layout.addRow("Parallels Interval", self.parallels_interval_input)
-        
-        self.rotation_frames_input = QSpinBox()
-        self.rotation_frames_input.setRange(1, 120)
-        self.rotation_frames_input.setValue(30)
-        self.left_layout.addRow("Rotation Frames", self.rotation_frames_input)
 
         self.center_latitude_input = QDoubleSpinBox()
         self.center_latitude_input.setRange(-90, 90)
@@ -157,7 +148,6 @@ class NewViewMenu(QDialog):
         self.land_color_button.setStyleSheet("background-color:" + self.land_color)
 
     def choose_template(self):
-        print("choose_template")
         self.center_latitude_input.setValue(0.0)
         self.rotation_input.setValue(0.0)
         if self.templates_combobox.currentText() == "Atlas Height":
@@ -304,7 +294,7 @@ class NewViewMenu(QDialog):
             "layers": layers,
             "projection": self.projection_combobox.currentText(),
             "output_path": "out/" + self.name_input.text(),
-            "rotation_frames": self.rotation_frames_input.value(),
+            "rotation_frames": 1,
             "parallels_interval": self.parallels_interval_input.value(),
             "parallels_color": str(self.parallels_color),
             "height_colors": COLOR_SCHEMES[self.height_color_combobox.currentText()]

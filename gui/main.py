@@ -2,18 +2,15 @@ import json
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QFileDialog, QTabWidget, QSplashScreen
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import Qt
 import re
 import subprocess
 import requests
 
-from initial_menu import InitialMenu
+from initial_tab import InitialTab
 from world_tab import WorldTab
 from menu_bar import TopMenuBar
 from new_view_menu import NewViewMenu
 
-
-IMAGES_DIR_PATH = "images/earth"
 
 
 def natural_sort(file_paths):
@@ -63,6 +60,7 @@ class MapMaker(QMainWindow):
         """)
     
         main_layout.addWidget(self.tabs)
+        self.tabs.addTab(InitialTab(), "Welcome")
         self.setLayout(main_layout)
         self.setCentralWidget(self.tabs)
         self.setMenuBar(TopMenuBar(self))
