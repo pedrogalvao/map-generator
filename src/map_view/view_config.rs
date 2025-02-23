@@ -271,7 +271,10 @@ pub fn img_from_config<S: MapShape + 'static>(
 ) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     macro_rules! draw_with_projection {
         ($projection:ty, $cmap:expr, $view_config:expr, $latitude:expr, $rotation:expr) => {{
-            let mv = create_view::<Oblique<$projection>, S>(&$view_config);
+            let mut mv = create_view::<Oblique<$projection>, S>(&$view_config);
+            mv.center[1] = $rotation;
+            mv.projection.longitude = view_config.center[1];
+            mv.projection.latitude = $latitude;
             return mv.return_image_buffer(&$cmap);
         }};
     }
