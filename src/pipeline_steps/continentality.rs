@@ -14,7 +14,7 @@ impl<S: MapShape> PipelineStep<S> for CalculateContinentality {
         let [latitude, longitude] = input_map.continentality.convert_coords(x, y);
         let latitude_abs = latitude.abs();
         let latitude_influence;
-        latitude_influence = 20.0 - 20.0 * (2.0 * latitude_abs * PI / 180.0).cos();
+        latitude_influence = 25.0 - 20.0 * (2.0 * latitude_abs * PI / 180.0).cos();
         // if latitude_abs < 10.0 {
         //     latitude_influence = -30 + 3 * latitude_abs as i32;
         // } else if latitude_abs < 25.0 {
@@ -27,7 +27,7 @@ impl<S: MapShape> PipelineStep<S> for CalculateContinentality {
 
         let mut others = 0;
         for i in -10..10 {
-            for j in -40..15 {
+            for j in -40..0 {
                 let height2 = input_map
                     .height
                     .get(latitude + 1.2 * i as f32, longitude + 2.4 * j as f32);
@@ -36,8 +36,8 @@ impl<S: MapShape> PipelineStep<S> for CalculateContinentality {
                 }
             }
         }
-        for i in -10..10 {
-            for j in -15..15 {
+        for i in -15..8 {
+            for j in -12..12 {
                 let height2 = input_map
                     .height
                     .get(latitude + 0.5 * i as f32, longitude + 1.0 * j as f32);
@@ -46,14 +46,24 @@ impl<S: MapShape> PipelineStep<S> for CalculateContinentality {
                 }
             }
         }
-        let max_others = 20 * 30 + 20 * 55;
+        let max_others = 25 * 20 + 20 * 40;
         let height: i32 = input_map.height.get(latitude, longitude);
         if height <= 0 {
-            return (latitude_influence - (17.0 * others as f32 / max_others as f32 - 10.0)).max(0.0)
-                as i32
-                / 2;
+            if latitude > 60.0 {
+                return (latitude_influence
+                    - 7.0
+                    - (16.0 * others as f32 / max_others as f32 - 10.0))
+                    .max(0.0) as i32
+                    / 2;
+            } else {
+                return (latitude_influence
+                    - 3.0
+                    - (16.0 * others as f32 / max_others as f32 - 10.0))
+                    .max(0.0) as i32
+                    / 2;
+            }
         }
-        return (latitude_influence - (17.0 * others as f32 / max_others as f32 - 8.0)).max(0.0)
+        return (latitude_influence - (6.0 * others as f32 / max_others as f32 - 8.0)).max(0.0)
             as i32
             / 2;
     }

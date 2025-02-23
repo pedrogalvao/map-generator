@@ -16,7 +16,7 @@ pub struct TemperatureFromContinentality {
 impl TemperatureFromContinentality {
     pub fn default() -> Self {
         Self {
-            year_divisions: 24,
+            year_divisions: 12,
             equator_temperature: 27.0,
             pole_temperature: -35.0,
         }
@@ -45,7 +45,7 @@ impl TemperatureFromContinentality {
                 // temperature = (57.0 * (latitude * PI / 180.0).cos() - 30.0) as i32;
                 // temperature = (60.0 * (1.0 - (latitude.abs() / 90.0).powf(3.5)) - 33.0) as i32;
                 temperature = (self.equator_temperature - self.pole_temperature)
-                    * (1.0 - (latitude.abs() / 90.0).powf(3.5))
+                    * (1.0 - (latitude.abs() / 90.0).powf(3.0))
                     + self.pole_temperature;
                 let continentality = input_map.continentality.get(latitude, longitude);
                 let variation =
@@ -59,26 +59,26 @@ impl TemperatureFromContinentality {
                     let height_east = input_map.height.get(latitude, longitude + 5.0);
                     let height_west = input_map.height.get(latitude, longitude - 5.0);
                     if height_east > 0 {
-                        temperature -= 3.0;
+                        temperature -= 2.0;
                     }
                     if height_west > 0 {
-                        temperature += 3.0;
+                        temperature += 2.0;
                     }
                     let height_east = input_map.height.get(latitude, longitude + 10.0);
                     let height_west = input_map.height.get(latitude, longitude - 10.0);
                     if height_east > 0 {
-                        temperature -= 3.0;
+                        temperature -= 2.0;
                     }
                     if height_west > 0 {
                         if latitude.abs() < 60.0 {
-                            temperature += 3.0;
+                            temperature += 2.0;
                         } else if latitude.abs() > 70.0 {
-                            temperature -= 3.0;
+                            temperature -= 2.0;
                         }
                     }
                 }
-                if height >= 0 && latitude.abs() >= 60.0 {
-                    temperature -= ((90.0 - 60.0) / 30.0) * continentality as f32 / 2.0;
+                if height >= 0 && latitude.abs() >= 45.0 {
+                    temperature -= ((90.0 - 45.0) / 45.0) * continentality as f32 / 2.0;
                 }
                 temperature_map.values[i][j] = temperature;
             }
@@ -172,7 +172,7 @@ impl<S: MapShape> PipelineStep<S> for TemperatureFromContinentality {
     fn apply(&self, input_map: &CompleteMap<S>) -> CompleteMap<S> {
         let mut output_map = input_map.clone();
         output_map.temperature = vec![];
-        for t in 0..self.year_divisions {
+        for t in 0..=self.year_divisions / 2 {
             output_map.temperature.push(self.define_month_temperature(
                 t as u32,
                 self.year_divisions as u32,
@@ -198,6 +198,14 @@ impl<S: MapShape> PipelineStep<S> for TemperatureFromContinentality {
         let mut smooth_step = SmoothTemperature::new();
         smooth_step.pixel_distance = 1;
         output_map = smooth_step.apply(&output_map);
+
+        // Remaining months mirror the previous ones
+        for t in self.year_divisions / 2 + 1..self.year_divisions {
+            let temperature_map =
+                output_map.temperature[(self.year_divisions - t) as usize].clone();
+            output_map.temperature.push(temperature_map);
+        }
+
         return output_map;
     }
 }
