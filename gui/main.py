@@ -121,6 +121,8 @@ class MapMaker(QMainWindow):
             print(f'Save Response JSON: {response.json()}')
 
     def selected_world(self):
+        if len(self.tabs) == 0:
+            return None
         return self.tabs.currentWidget().name
 
 def main():

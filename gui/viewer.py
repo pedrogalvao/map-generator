@@ -112,6 +112,9 @@ class MapViewer(QLabel):
 
     def display_image(self):
         if self.images[self.current_view] and 0 <= self.current_index < 30:
+            if self.current_image().width() == 0 or self.current_image().height() == 0:
+                # image not available yet
+                return
             if self.zoom_factor > 1:
                 width = self.current_image().width()
                 height = self.current_image().height()

@@ -93,7 +93,8 @@ class WorldTab(QFrame):
                 req_data["params"]["center"][1] -= 360
             t = Thread(target=request_image, args=[deepcopy(req_data), i])
             t.start()
-        sleep(5)
+        while len(self.map_viewer.images[view_name].data) < 6:
+            sleep(1)
         for i in range(30):
             if i % 5 == 0:
                 continue
@@ -102,13 +103,16 @@ class WorldTab(QFrame):
                 req_data["params"]["center"][1] -= 360
             t = Thread(target=request_image, args=[deepcopy(req_data), i])
             t.start()
-        sleep(5)
+        while len(self.map_viewer.images[view_name].data) < 30:
+            sleep(1)
         for i in range(30):
             req_data["params"]["center"][1] = i * 360 / 30 + 360 / 60
             if req_data["params"]["center"][1] > 180:
                 req_data["params"]["center"][1] -= 360
             t = Thread(target=request_image, args=[deepcopy(req_data), i+0.5])
             t.start()
+            while len(self.map_viewer.images[view_name].data) <= 28 + i:
+                sleep(1)
 
     def load_images(self, view_name: str):
         self.map_viewer.load_images(view_name)
