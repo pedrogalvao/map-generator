@@ -36,7 +36,7 @@ where
 impl<S, T, P, F> MapViewLayer<P, S> for PartialMapLayer<S, T, F>
 where
     S: MapShape,
-    T: Clone + Default + Eq + std::hash::Hash,
+    T: Clone + Default,
     P: Projection,
     F: Fn(&CompleteMap<S>) -> &PartialMap<S, T>,
 {

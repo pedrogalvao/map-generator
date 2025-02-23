@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{complete_map::CompleteMap, shapes::map_shape::MapShape};
+use crate::{complete_map::CompleteMap, partial_map::PartialMap, shapes::map_shape::MapShape};
 
 use super::pipeline_step::PipelineStep;
 
@@ -63,4 +63,28 @@ impl<S: MapShape> PipelineStep<S> for SmoothOcean {
         let mean = sum / len;
         return mean.min(0);
     }
+}
+
+pub fn smooth_pmap<S: MapShape>(
+    input_map: &PartialMap<S, i32>,
+    pixel_distance: usize,
+) -> PartialMap<S, i32> {
+    let mut output_map = PartialMap::new(input_map.circunference, input_map.height);
+    // let mut output_map = input_map.clone();
+    for x in 0..input_map.values.len() {
+        for y in 0..input_map.values[x].len() {
+            let neighbors = input_map.get_pixel_neighbours([x, y], pixel_distance);
+            let mut sum = 0;
+            let mut len = 0;
+            for i in 0..neighbors.len() {
+                for j in 0..neighbors[i].len() {
+                    sum += neighbors[i][j];
+                    len += 1;
+                }
+            }
+            let mean = sum / len;
+            output_map.values[x][y] = mean;
+        }
+    }
+    return output_map;
 }

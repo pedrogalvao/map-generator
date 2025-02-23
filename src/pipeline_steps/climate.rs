@@ -28,8 +28,11 @@ pub enum Climate {
     SubtropicalMonsoon,
     Oceanic,
     SubarcticOceanic,
+    HotHumidContinental,
     HumidContinental,
     MonsoonContinental,
+    HotMediterraneanContinental,
+    ColdMediterraneanContinental,
     Subarctic,
     SevereSubarctic,
     Tundra,
@@ -264,35 +267,6 @@ impl DefineKoppenClimate {
                 return Climate::Glaciar;
             }
             return Climate::Ocean;
-        }
-        if max_temperature >= 10.0 && min_temperature <= -3.0 {
-            // D - Continental
-            // temperature of warmest month greater than or equal to 10 °C,
-            //  and temperature of coldest month –3 °C or lower
-
-            let abcd = get_abcd(latitude, longitude, &complete_map);
-
-            match abcd {
-                ABCD::A | ABCD::B => {
-                    // Cfa
-                    match get_swf(latitude, longitude, &complete_map) {
-                        SWF::F => {
-                            return Climate::HumidContinental;
-                        }
-                        _ => {
-                            return Climate::MonsoonContinental;
-                        }
-                    }
-                }
-                ABCD::C => {
-                    // D*c
-                    return Climate::Subarctic;
-                }
-                ABCD::D => {
-                    // D*d
-                    return Climate::SevereSubarctic;
-                }
-            }
         } else if max_temperature < 10.0 {
             // E - Polar
             if max_temperature > 1.0 {
@@ -338,6 +312,55 @@ impl DefineKoppenClimate {
                 } else {
                     // BSk
                     return Climate::ColdSemiarid;
+                }
+            }
+        } else if max_temperature >= 10.0 && min_temperature <= -3.0 {
+            // D - Continental
+            // temperature of warmest month greater than or equal to 10 °C,
+            //  and temperature of coldest month –3 °C or lower
+
+            let abcd = get_abcd(latitude, longitude, &complete_map);
+
+            match abcd {
+                ABCD::A => {
+                    match get_swf(latitude, longitude, &complete_map) {
+                        SWF::F => {
+                            // Dfb
+                            return Climate::HotHumidContinental;
+                        }
+                        SWF::S => {
+                            // Dsa
+                            return Climate::HotMediterraneanContinental;
+                        }
+                        SWF::W => {
+                            // Dwa
+                            return Climate::MonsoonContinental;
+                        }
+                    }
+                }
+                ABCD::B => {
+                    match get_swf(latitude, longitude, &complete_map) {
+                        SWF::F => {
+                            // Dfb
+                            return Climate::HumidContinental;
+                        }
+                        SWF::S => {
+                            // Dsb
+                            return Climate::ColdMediterraneanContinental;
+                        }
+                        SWF::W => {
+                            // Dwb
+                            return Climate::MonsoonContinental;
+                        }
+                    }
+                }
+                ABCD::C => {
+                    // D*c
+                    return Climate::Subarctic;
+                }
+                ABCD::D => {
+                    // D*d
+                    return Climate::SevereSubarctic;
                 }
             }
         } else if min_temperature >= 18.0 {

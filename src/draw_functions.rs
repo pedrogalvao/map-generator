@@ -264,11 +264,15 @@ pub fn draw_temperature<S: MapShape + 'static>(cmap: &CompleteMap<S>) {
     }
     let mut mv: MapView<Mollweide, S> = MapView::new();
     mv.resolution = [1000, 500];
-    for t in 0..12 {
+    for t in 0..24 {
         mv.time_of_year = t;
         mv.layers = vec![
-            pmap_layer!(height, WHITE),
-            pmap_layer!(height, DARK_MOUNTAINS),
+            // pmap_layer!(height, WHITE),
+            // pmap_layer!(height, DARK_MOUNTAINS),
+            Box::new(PartialMapLayer::new(
+                move |m| &m.temperature[t],
+                Box::new(TEMPERATURE_COLORS.clone()),
+            )),
             // pmap_layer!(temperature, t, TEMPERATURE_COLORS),
             Box::new(ParallelsMeridiansLayer::default()),
             Box::new(ParallelsMeridiansLayer::tropics()),
@@ -329,7 +333,7 @@ pub fn draw_precipitation_equirectangular<S: MapShape + 'static>(cmap: &Complete
     }
     let mut mv: MapView<Equirectangular, S> = MapView::new();
     mv.resolution = [2000, 1000];
-    for t in 0..12 {
+    for t in 0..24 {
         mv.time_of_year = t;
         mv.layers = vec![
             pmap_layer!(height, WHITE),
@@ -356,6 +360,8 @@ pub fn draw_precipitation_equirectangular<S: MapShape + 'static>(cmap: &Complete
         Box::new(ParallelsMeridiansLayer::polar_circle()),
     ];
     mv.draw(&cmap, "out/precipitation/annual.png");
+
+    draw_temperature(&cmap);
 }
 
 pub fn draw_continentality<S: MapShape + 'static>(cmap: &CompleteMap<S>) {
@@ -370,7 +376,7 @@ pub fn draw_continentality<S: MapShape + 'static>(cmap: &CompleteMap<S>) {
     mv.layers = vec![
         pmap_layer!(height, WHITE),
         pmap_layer!(height, DARK_MOUNTAINS),
-        pmap_layer!(continentality, TEMPERATURE_COLORS),
+        pmap_layer!(continentality, PRECIPITATION_COLORS),
         Box::new(ContourLayer::new(
             move |m| &m.height,
             Rgba([0, 0, 0, 255]),

@@ -18,7 +18,7 @@ use crate::{
 use super::{
     color_scheme::{
         CategoryColorScheme, ClimateColorScheme, GradientColorScheme, ANNUAL_PRECIPITATION_COLORS,
-        TEMPERATURE_COLORS, TEXTURE_SCHEME,
+        CONTINENTALITY_COLORS, TEXTURE_SCHEME,
     },
     contour_layer::ContourLayer,
     map_view::MapView,
@@ -162,7 +162,7 @@ pub fn create_view<P: Projection, S: MapShape + 'static>(
             }
             "continentality" => {
                 mv.layers
-                    .push(pmap_layer!(continentality, TEMPERATURE_COLORS));
+                    .push(pmap_layer!(continentality, CONTINENTALITY_COLORS));
             }
             "satellite" => {
                 mv.layers.push(Box::new(SatelliteLayer {}));
@@ -271,10 +271,7 @@ pub fn img_from_config<S: MapShape + 'static>(
 ) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     macro_rules! draw_with_projection {
         ($projection:ty, $cmap:expr, $view_config:expr, $latitude:expr, $rotation:expr) => {{
-            let mut mv = create_view::<Oblique<$projection>, S>(&$view_config);
-            mv.center[1] = $rotation;
-            mv.projection.longitude = view_config.center[1];
-            mv.projection.latitude = $latitude;
+            let mv = create_view::<Oblique<$projection>, S>(&$view_config);
             return mv.return_image_buffer(&$cmap);
         }};
     }

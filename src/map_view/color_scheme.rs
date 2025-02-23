@@ -3,14 +3,14 @@ use image::{open, DynamicImage, GenericImageView, Rgba};
 use lazy_static::lazy_static;
 use rand::Rng;
 use serde::{de, Deserialize, Deserializer};
-use std::{collections::HashMap, hash::Hash};
+use std::collections::HashMap;
 
 fn generate_random_color() -> Rgba<u8> {
     let mut rng = rand::thread_rng();
     Rgba([rng.gen::<u8>(), rng.gen::<u8>(), rng.gen::<u8>(), 255])
 }
 
-pub trait ColorScheme<T: Eq + Clone + Hash> {
+pub trait ColorScheme<T: Clone> {
     fn get(&self, value: T) -> Rgba<u8>;
 }
 
@@ -40,6 +40,21 @@ where
     Ok(result)
 }
 
+fn deserialize_rgba_tuple_vecf32<'de, D>(deserializer: D) -> Result<Vec<(f32, Rgba<u8>)>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let raw_vec: Vec<(f32, String)> = Vec::deserialize(deserializer)?;
+    let mut result = Vec::with_capacity(raw_vec.len());
+
+    for (point, rgba_str) in raw_vec {
+        let rgba = rgba_from_str(&rgba_str).map_err(de::Error::custom)?;
+        result.push((point, rgba));
+    }
+
+    Ok(result)
+}
+
 #[derive(Clone, Deserialize)]
 pub struct GradientColorScheme {
     #[serde(deserialize_with = "deserialize_rgba_tuple_vec")]
@@ -59,6 +74,36 @@ impl ColorScheme<i32> for GradientColorScheme {
                         let weight2 = value - point_value;
                         color[k] = ((point_color[k] as i32 * weight1
                             + next_color[k] as i32 * weight2)
+                            / (weight1 + weight2)) as u8;
+                    }
+                    return color;
+                }
+            } else if value > *point_value {
+                return self.points[self.points.len() - 1].1;
+            }
+        }
+        return color;
+    }
+}
+
+#[derive(Clone, Deserialize)]
+pub struct GradientColorSchemef32 {
+    #[serde(deserialize_with = "deserialize_rgba_tuple_vecf32")]
+    pub points: Vec<(f32, Rgba<u8>)>,
+}
+impl ColorScheme<f32> for GradientColorSchemef32 {
+    fn get(&self, value: f32) -> Rgba<u8> {
+        let mut color: Rgba<u8> = self.points[0].1;
+        for (i, (point_value, point_color)) in self.points.iter().enumerate() {
+            if i + 1 < self.points.len() {
+                let next_value = self.points[i + 1].0 as f32;
+                let next_color = self.points[i + 1].1;
+                if value >= *point_value as f32 && value <= next_value {
+                    for k in 0..4 {
+                        let weight1 = (next_value - value) as f32;
+                        let weight2 = (value - point_value) as f32;
+                        color[k] = ((point_color[k] as f32 * weight1
+                            + next_color[k] as f32 * weight2)
                             / (weight1 + weight2)) as u8;
                     }
                     return color;
@@ -147,8 +192,11 @@ impl ColorScheme<Climate> for ClimateColorScheme {
             Climate::SubtropicalMonsoon => Rgba([150, 255, 150, 255]), // Cwa
             Climate::Oceanic => Rgba([99, 199, 100, 255]),          // Cwb
             Climate::SubarcticOceanic => Rgba([50, 150, 51, 255]),  // Cwc
-            Climate::HumidContinental => Rgba([0, 255, 255, 255]),  // Dfa
+            Climate::HotHumidContinental => Rgba([0, 255, 255, 255]), // Dfa
+            Climate::HumidContinental => Rgba([55, 200, 255, 255]), // Dfb
             Climate::MonsoonContinental => Rgba([171, 177, 255, 255]), // Dwa
+            Climate::HotMediterraneanContinental => Rgba([255, 0, 255, 255]), // Dsa
+            Climate::ColdMediterraneanContinental => Rgba([200, 0, 200, 255]), // Dsb
             Climate::Subarctic => Rgba([0, 126, 125, 255]),         // Dfc
             Climate::SevereSubarctic => Rgba([0, 69, 94, 255]),     // Dfd
             Climate::Tundra => Rgba([178, 178, 178, 255]),
@@ -246,7 +294,16 @@ lazy_static! {
             (3001, Rgba([0, 0, 0, 200])),
         ]
     };
-    pub static ref TEMPERATURE_COLORS: GradientColorScheme = GradientColorScheme {
+    pub static ref TEMPERATURE_COLORS: GradientColorSchemef32 = GradientColorSchemef32 {
+        points: vec![
+            (-30.0, Rgba([0, 0, 255, 255])),
+            (0.0, Rgba([255, 255, 255, 255])),
+            (10.0, Rgba([0, 255, 0, 255])),
+            (20.0, Rgba([255, 255, 0, 255])),
+            (30.0, Rgba([255, 0, 0, 255])),
+        ]
+    };
+    pub static ref CONTINENTALITY_COLORS: GradientColorScheme = GradientColorScheme {
         points: vec![
             (-30, Rgba([0, 0, 255, 255])),
             (0, Rgba([255, 255, 255, 255])),
