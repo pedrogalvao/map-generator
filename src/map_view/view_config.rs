@@ -17,7 +17,8 @@ use crate::{
 
 use super::{
     color_scheme::{
-        CategoryColorScheme, ClimateColorScheme, GradientColorScheme, ANNUAL_PRECIPITATION_COLORS, CONTINENTALITY_COLORS, TEMPERATURE_COLORS, TEXTURE_SCHEME
+        CategoryColorScheme, ClimateColorScheme, GradientColorScheme, ANNUAL_PRECIPITATION_COLORS,
+        CONTINENTALITY_COLORS, TEMPERATURE_COLORS, TEXTURE_SCHEME,
     },
     contour_layer::ContourLayer,
     map_view::MapView,

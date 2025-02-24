@@ -346,6 +346,7 @@ fn post_calculate_climate(
         &precipitation_percentiles,
         climate_config.equator_temperature,
         climate_config.pole_temperature,
+        climate_config.humidity
     );
     apply_operation!(operation, key, store);
     Json(Message {

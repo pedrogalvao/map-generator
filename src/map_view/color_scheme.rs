@@ -342,4 +342,13 @@ lazy_static! {
             (500, Rgba([20, 80, 10, 255])),
         ]
     };
+    pub static ref VEGETATION_COLORS: GradientColorScheme = GradientColorScheme {
+        points: vec![
+            (0, Rgba([200, 190, 170, 255])),
+            (200, Rgba([160, 155, 120, 255])),
+            (600, Rgba([92, 110, 80, 255])),
+            (800, Rgba([70, 100, 65, 255])),
+            (1000, Rgba([52, 85, 52, 255])),
+        ]
+    };
 }

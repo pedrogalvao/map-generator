@@ -33,4 +33,5 @@ pub struct Configuration {
 pub struct ClimateConfiguration {
     pub pole_temperature: f32,
     pub equator_temperature: f32,
+    pub humidity: f32,
 }

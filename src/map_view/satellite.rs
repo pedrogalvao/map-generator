@@ -1,4 +1,5 @@
 use image::{ImageBuffer, Rgba};
+use rocket::tokio::task::LocalEnterGuard;
 
 use crate::{
     complete_map::CompleteMap,
@@ -6,7 +7,12 @@ use crate::{
     shapes::map_shape::MapShape,
 };
 
-use super::{layer::MapViewLayer, projection::projection::Projection, util::color_over};
+use super::{
+    color_scheme::{ColorScheme, VEGETATION_COLORS},
+    layer::MapViewLayer,
+    projection::projection::Projection,
+    util::color_over,
+};
 
 pub struct SatelliteLayer {}
 
@@ -41,17 +47,29 @@ impl<P: Projection, S: MapShape> MapViewLayer<P, S> for SatelliteLayer {
                             // if vegetation > 0 && vegetation < 990 {
                             //     dbg!(vegetation);
                             // }
-                            if vegetation == 0 {
-                                Rgba([200, 190, 170, 255])
-                            } else if vegetation <= 250 {
-                                Rgba([160, 155, 120, 255])
-                            } else if vegetation <= 600 {
-                                Rgba([92, 110, 80, 255])
-                            } else if vegetation <= 900 {
-                                Rgba([70, 100, 65, 255])
-                            } else {
-                                Rgba([52, 85, 52, 255])
+                            let mut color = VEGETATION_COLORS.get(vegetation);
+                            let climate = complete_map.climate.get(latitude, longitude);
+                            if climate == Climate::Tundra {
+                                let mut max_temperature = -1.0;
+                                for temp_pmap in &complete_map.temperature {
+                                    let temperature = temp_pmap.get(latitude, longitude);
+                                    if temperature > max_temperature {
+                                        max_temperature = temperature;
+                                    }
+                                }
+                                if max_temperature < 5.0 {
+                                    color = color_over(
+                                        &color,
+                                        &Rgba([
+                                            255,
+                                            255,
+                                            255,
+                                            255 - (63.0 * (max_temperature - 1.0)) as u8,
+                                        ]),
+                                    );
+                                }
                             }
+                            color
                         }
                     };
 

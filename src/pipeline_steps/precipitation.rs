@@ -3,7 +3,9 @@ use std::{f32::consts::PI, fmt, sync::Arc};
 
 use super::{pipeline_step::PipelineStep, resize::resize, smooth::smooth_pmap};
 
-pub struct CalculatePrecipitation {}
+pub struct CalculatePrecipitation {
+    humidity: f32,
+}
 
 impl fmt::Debug for CalculatePrecipitation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -31,6 +33,9 @@ fn calculate_itcz<S: MapShape>(complete_map: &CompleteMap<S>, div_number: usize)
 }
 
 impl CalculatePrecipitation {
+    pub fn new(humidity: f32) -> Self {
+        Self { humidity }
+    }
     fn process_precipitation_element<S: MapShape>(
         &self,
         x: usize,
@@ -62,9 +67,9 @@ impl CalculatePrecipitation {
             }
         }
 
-        let mut max_dist = 20;
+        let mut max_dist;
         let mut precipitation = 0.0;
-        let mut init_cumulative_multiplier = 1.0;
+        let mut init_cumulative_multiplier = self.humidity;
         let mut n;
         if itcz_distance.abs() > 19.0 && itcz_distance.abs() < 33.0 {
             // init_cumulative_multiplier *= 0.7;
@@ -169,7 +174,6 @@ impl CalculatePrecipitation {
                 cumulative_multiplier *= 0.98;
             }
         }
-        // dbg!(precipitation);
         return precipitation as i32;
     }
 }
@@ -181,6 +185,9 @@ impl<S: MapShape> PipelineStep<S> for CalculatePrecipitation {
 
     fn apply(&self, input_map: &CompleteMap<S>) -> CompleteMap<S> {
         let mut output_map = input_map.clone();
+
+        output_map.precipitation = vec![];
+
         let half_length = (input_map.temperature.len() as f32 / 2.0).ceil() as usize;
         for i in 0..=half_length {
             let itcz = calculate_itcz(&input_map, i);

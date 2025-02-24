@@ -18,6 +18,7 @@ pub struct CalculateClimate {
     precipitation_percentiles: Vec<(f32, i32)>,
     pole_temperature: f32,
     equator_temperature: f32,
+    humidity: f32,
 }
 
 impl CalculateClimate {
@@ -25,11 +26,13 @@ impl CalculateClimate {
         precipitation_percentiles: &Vec<(f32, i32)>,
         equator_temperature: f32,
         pole_temperature: f32,
+        humidity: f32,
     ) -> Self {
         Self {
             precipitation_percentiles: precipitation_percentiles.clone(),
             pole_temperature,
             equator_temperature,
+            humidity,
         }
     }
 }
@@ -53,7 +56,7 @@ impl<S: MapShape> PipelineStep<S> for CalculateClimate {
         dbg!("TemperatureFromContinentality time:", i2 - i1);
         // output_map = DefinePressure::new().apply(&output_map);
         // output_map = DefineWindsGradient::new().apply(&output_map);
-        output_map = CalculatePrecipitation {}.apply(&output_map);
+        output_map = CalculatePrecipitation::new(self.humidity).apply(&output_map);
         let i3 = Instant::now();
         dbg!("CalculatePrecipitation time:", i3 - i2);
         // output_map =

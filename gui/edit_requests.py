@@ -129,6 +129,7 @@ class ClimatePopup(OperationDialog):
         super().__init__(main_window)
         self.add_float_option("Pole Temperature", -100, 100, -35)
         self.add_float_option("Equator Temperature", -100, 100, 25)
+        self.add_float_option("Humidity", -0, 3, 1)
         self.layout.addWidget(self.buttonBox)
         self.route = "calculate_climate"
 

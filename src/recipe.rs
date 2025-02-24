@@ -4,13 +4,11 @@ use crate::{
     pipeline_steps::{
         adjust_percentiles::{
             AdjustLandHeightPercentiles, AdjustOceanDepthPercentiles,
-            AdjustPrecipitationPercentiles,
         },
         annual_precipitation::CalculateAnnualPrecipitation,
         climate::DefineKoppenClimate,
         continentality::CalculateContinentality,
         define_coastlines::DefineCoastline,
-        gradient_winds::DefineWindsGradient,
         height_in_plates::HeightInPlates,
         height_noise::HeightNoise,
         height_noise_mult::HeightNoiseMult,
@@ -23,7 +21,6 @@ use crate::{
         noisy_voronoi_supercontinent::NoisyVoronoiSupercontinent,
         plate_gap::AddPlateGap,
         precipitation::CalculatePrecipitation,
-        pressure::DefinePressure,
         resize::Resize,
         rivers::CreateRivers,
         smooth::{Smooth, SmoothOcean},
@@ -256,7 +253,7 @@ pub fn standard_recipe<T: MapShape + 'static>(config: &Configuration) -> MapPipe
     if config.make_climate {
         map_pipeline.add_step(CalculateContinentality {});
         map_pipeline.add_step(TemperatureFromContinentality::default());
-        map_pipeline.add_step(CalculatePrecipitation {});
+        map_pipeline.add_step(CalculatePrecipitation::new(1.0));
         map_pipeline.add_step(CalculateAnnualPrecipitation {});
         map_pipeline.add_step(DefineKoppenClimate {});
         map_pipeline.add_step(CreateRivers {});
