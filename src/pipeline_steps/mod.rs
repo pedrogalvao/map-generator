@@ -29,4 +29,5 @@ pub mod tectonic_edges;
 pub mod temperature_from_continentality;
 pub mod translation_noise;
 pub mod util;
+pub mod vegetation;
 pub mod water_level;

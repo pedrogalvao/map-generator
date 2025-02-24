@@ -2,7 +2,9 @@ use std::sync::Arc;
 
 use rocket::tokio::time::Instant;
 
-use crate::{complete_map::CompleteMap, shapes::map_shape::MapShape};
+use crate::{
+    complete_map::CompleteMap, pipeline_steps::vegetation::Vegetation, shapes::map_shape::MapShape,
+};
 
 use super::{
     annual_precipitation::CalculateAnnualPrecipitation, climate::DefineKoppenClimate,
@@ -58,6 +60,7 @@ impl<S: MapShape> PipelineStep<S> for CalculateClimate {
         //     AdjustPrecipitationPercentiles::new(&self.precipitation_percentiles).apply(&output_map);
         output_map = CalculateAnnualPrecipitation {}.apply(&output_map);
         output_map = DefineKoppenClimate {}.apply(&output_map);
+        output_map = Vegetation::new().apply(&output_map);
         // output_map = CreateRivers {}.apply(&output_map);
         let i3 = Instant::now();
         dbg!("Total climate calculation time:", i3 - i0);

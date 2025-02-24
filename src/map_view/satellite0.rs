@@ -1,9 +1,7 @@
 use image::{ImageBuffer, Rgba};
 
 use crate::{
-    complete_map::CompleteMap,
-    pipeline_steps::{climate::Climate, vegetation},
-    shapes::map_shape::MapShape,
+    complete_map::CompleteMap, pipeline_steps::climate::Climate, shapes::map_shape::MapShape,
 };
 
 use super::{layer::MapViewLayer, projection::projection::Projection, util::color_over};
@@ -33,26 +31,20 @@ impl<P: Projection, S: MapShape> MapViewLayer<P, S> for SatelliteLayer {
 
                     let layer_color = match climate {
                         Climate::Ocean => Rgba([10, 36, 80, 255]),
+                        Climate::HotDesert | Climate::ColdDesert => Rgba([200, 190, 170, 255]),
+                        Climate::HotSemiarid | Climate::ColdSemiarid => Rgba([160, 155, 120, 255]),
+                        Climate::Savanah => Rgba([92, 110, 80, 255]),
+                        Climate::Tropical
+                        | Climate::Subarctic
+                        | Climate::SubarcticOceanic
+                        | Climate::HumidSubtropical => Rgba([52, 85, 52, 255]),
+                        Climate::Tundra => Rgba([80, 100, 80, 255]),
                         Climate::Glaciar => Rgba([255, 255, 255, 255]),
-                        // Climate::HotDesert | Climate::ColdDesert => Rgba([200, 0, 0, 255]),
-                        _ => {
-                            let vegetation =
-                                complete_map.vegetation_density.get(latitude, longitude);
-                            // if vegetation > 0 && vegetation < 990 {
-                            //     dbg!(vegetation);
-                            // }
-                            if vegetation == 0 {
-                                Rgba([200, 190, 170, 255])
-                            } else if vegetation <= 250 {
-                                Rgba([160, 155, 120, 255])
-                            } else if vegetation <= 600 {
-                                Rgba([92, 110, 80, 255])
-                            } else if vegetation <= 900 {
-                                Rgba([70, 100, 65, 255])
-                            } else {
-                                Rgba([52, 85, 52, 255])
-                            }
-                        }
+                        Climate::Monsoon
+                        | Climate::SubtropicalMonsoon
+                        | Climate::HotMediterranean
+                        | Climate::ColdMediterranean => Rgba([70, 100, 65, 255]),
+                        _ => Rgba([70, 100, 65, 255]),
                     };
 
                     let original_color = base_img.get_pixel(j as u32, i as u32);

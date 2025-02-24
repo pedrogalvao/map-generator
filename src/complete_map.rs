@@ -37,6 +37,7 @@ pub struct CompleteMap<S: MapShape> {
     pub hotspots: Vec<[f32; 2]>,
     pub fresh_water: PartialMap<S, i32>,
     pub coastline: Option<HashSet<[usize; 2]>>,
+    pub vegetation_density: PartialMap<S, i32>,
 }
 
 impl<S: MapShape> CompleteMap<S> {
@@ -64,6 +65,7 @@ impl<S: MapShape> CompleteMap<S> {
             hotspots: vec![],
             fresh_water: PartialMap::new(0, 0),
             coastline: None,
+            vegetation_density: PartialMap::new(0, 0),
         }
     }
 

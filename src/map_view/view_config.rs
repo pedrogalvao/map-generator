@@ -17,8 +17,7 @@ use crate::{
 
 use super::{
     color_scheme::{
-        CategoryColorScheme, ClimateColorScheme, GradientColorScheme, ANNUAL_PRECIPITATION_COLORS,
-        CONTINENTALITY_COLORS, TEXTURE_SCHEME,
+        CategoryColorScheme, ClimateColorScheme, GradientColorScheme, ANNUAL_PRECIPITATION_COLORS, CONTINENTALITY_COLORS, TEMPERATURE_COLORS, TEXTURE_SCHEME
     },
     contour_layer::ContourLayer,
     map_view::MapView,
@@ -169,6 +168,10 @@ pub fn create_view<P: Projection, S: MapShape + 'static>(
             }
             "relief_shadow" => {
                 mv.layers.push(Box::new(ReliefShadowLayer {}));
+            }
+            "temperature" => {
+                mv.layers
+                    .push(pmap_layer!(temperature, 6, TEMPERATURE_COLORS));
             }
             _ => {
                 dbg!("Error: invalid layer name:", layer.as_str());
