@@ -24,7 +24,7 @@ impl TemperatureFromContinentality {
 
     pub fn new(equator_temperature: f32, pole_temperature: f32) -> Self {
         Self {
-            year_divisions: 24,
+            year_divisions: 12,
             equator_temperature,
             pole_temperature,
         }
@@ -97,8 +97,11 @@ impl TemperatureFromContinentality {
                 let [latitude, longitude] = temperature_map.convert_coords(i, j);
                 let mut temperature = temperature_map.values[i][j];
                 let height = input_map.height.get(latitude, longitude);
-                if height > 600 {
-                    temperature -= (height as f32 - 600.0) / 150.0;
+                if height > 500 {
+                    temperature -= (height.min(3000) as f32 - 500.0) / 150.0;
+                    if height > 3000 {
+                        temperature -= (height as f32 - 3000.0) / 300.0;
+                    }
                 }
                 temperature_map.values[i][j] = temperature;
             }

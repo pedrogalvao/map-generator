@@ -69,7 +69,7 @@ impl CalculatePrecipitation {
 
         let mut max_dist;
         let mut precipitation = 0.0;
-        let mut init_cumulative_multiplier = self.humidity;
+        let mut init_cumulative_multiplier = 0.8 * self.humidity;
         let mut n;
         if itcz_distance.abs() > 19.0 && itcz_distance.abs() < 33.0 {
             // init_cumulative_multiplier *= 0.7;

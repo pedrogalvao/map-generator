@@ -32,7 +32,9 @@ impl Vegetation {
 impl<S: MapShape> PipelineStep<S> for Vegetation {
     fn process_element(&self, x: usize, y: usize, complete_map: Arc<&CompleteMap<S>>) -> i32 {
         let [latitude, longitude] = complete_map.vegetation_density.convert_coords(x, y);
-        let noise_value = self.noise.get_spheric::<S, i32>(latitude, longitude) + self.noise2.get_spheric::<S, i32>(latitude, longitude) + self.noise3.get_spheric::<S, i32>(latitude, longitude);
+        let noise_value = self.noise.get_spheric::<S, i32>(latitude, longitude)
+            + self.noise2.get_spheric::<S, i32>(latitude, longitude)
+            + self.noise3.get_spheric::<S, i32>(latitude, longitude);
 
         let climate_type = complete_map.climate.get(latitude, longitude);
         match climate_type {
@@ -84,7 +86,7 @@ impl<S: MapShape> PipelineStep<S> for Vegetation {
         }
 
         if min_precipitation < 60 {
-            vegetation = vegetation.min(500 + min_precipitation * 8 + noise_value);
+            vegetation = vegetation.min(400 + min_precipitation * 8 + noise_value);
         }
 
         return vegetation + noise_value;

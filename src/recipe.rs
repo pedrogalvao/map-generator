@@ -2,12 +2,8 @@ use crate::{
     configuration::Configuration,
     map_pipeline::MapPipeline,
     pipeline_steps::{
-        adjust_percentiles::{
-            AdjustLandHeightPercentiles, AdjustOceanDepthPercentiles,
-        },
-        annual_precipitation::CalculateAnnualPrecipitation,
-        climate::DefineKoppenClimate,
-        continentality::CalculateContinentality,
+        adjust_percentiles::{AdjustLandHeightPercentiles, AdjustOceanDepthPercentiles},
+        calculate_climate::CalculateClimate,
         define_coastlines::DefineCoastline,
         height_in_plates::HeightInPlates,
         height_noise::HeightNoise,
@@ -20,13 +16,10 @@ use crate::{
         noisy_voronoi::NoisyVoronoi,
         noisy_voronoi_supercontinent::NoisyVoronoiSupercontinent,
         plate_gap::AddPlateGap,
-        precipitation::CalculatePrecipitation,
         resize::Resize,
-        rivers::CreateRivers,
         smooth::{Smooth, SmoothOcean},
         supercontinent_height_noise::SupercontinentHeightNoise,
         tectonic_edges::DefineTecEdges,
-        temperature_from_continentality::TemperatureFromContinentality,
         translation_noise::TranslationNoise,
         water_level::WaterLevel,
     },
@@ -251,12 +244,7 @@ pub fn standard_recipe<T: MapShape + 'static>(config: &Configuration) -> MapPipe
     let mut map_pipeline = create_height_pipeline(config);
 
     if config.make_climate {
-        map_pipeline.add_step(CalculateContinentality {});
-        map_pipeline.add_step(TemperatureFromContinentality::default());
-        map_pipeline.add_step(CalculatePrecipitation::new(1.0));
-        map_pipeline.add_step(CalculateAnnualPrecipitation {});
-        map_pipeline.add_step(DefineKoppenClimate {});
-        map_pipeline.add_step(CreateRivers {});
+        map_pipeline.add_step(CalculateClimate::new(&vec![], 25.0, -35.0, 1.0));
     }
     map_pipeline.add_step(DefineCoastline {});
 
