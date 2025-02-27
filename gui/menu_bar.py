@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QAction, QMenuBar 
+from PyQt5.QtWidgets import QAction, QMenuBar, QFileDialog
 
 from edit_requests import ClimatePopup, ResizePopup, WaterLevelPopup, add_noise_request, erosion_request, smooth_request, translation_noise_request
 from generation_menu import GenerationMenu
@@ -24,8 +24,10 @@ class TopMenuBar(QMenuBar):
         load_action = QAction("Open", self.main_window)
         load_action.triggered.connect(self.main_window.load_map)
         self.file_menu.addAction(load_action)
-        self.file_menu.addAction("Export as...")
-
+    
+        export_action = QAction("Export as...", self.main_window)
+        export_action.triggered.connect(self.export_image)
+        self.file_menu.addAction(export_action)
 
         add_erosion_action = QAction("Add Erosion", self.main_window)
         add_erosion_action.triggered.connect(lambda : erosion_request(self.main_window.selected_world()))
@@ -83,4 +85,22 @@ class TopMenuBar(QMenuBar):
             action.setDisabled(False)
         for action in self.edit_menu.actions():
             action.setDisabled(False)
+        for action in self.file_menu.actions():
+            print(action)
 
+    def export_image(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filepath, _ = QFileDialog.getSaveFileName(self, 
+            "Save File", "", "PNG (*.png);; JPEG (*.jpg);; GIF (*.gif)", options = options)
+        if filepath:
+            file_extension = filepath.split(".")[-1]
+            print(file_extension)
+            if file_extension == "png":
+                curr_img_pixmap = self.main_window.tabs.currentWidget().map_viewer.current_image()
+                curr_img_pixmap.save(filepath, "PNG")
+            elif file_extension == "jpg":
+                curr_img_pixmap = self.main_window.tabs.currentWidget().map_viewer.current_image()
+                curr_img_pixmap.save(filepath, "JPEG")
+            elif file_extension == "gif":
+                pass
