@@ -27,9 +27,19 @@ fn calculate_itcz<S: MapShape>(complete_map: &CompleteMap<S>, div_number: usize)
                 highest_temperature = temperature;
             }
         }
-        result.push([hottest_latitude / 1.4, longitude]);
+        result.push([hottest_latitude / 1.2, longitude]);
     }
-    return result;
+    let mut result2 = vec![];
+    for i in 0..result.len() {
+        let longitude = result[i][1];
+        let lat1 = result[i][0];
+        let lat2 = result[(i as i32 - 1) as usize % result.len()][0];
+        let lat3 = result[(i + 1) % result.len()][0];
+        dbg!(lat1, lat2, lat3);
+        dbg!((lat1 + lat2 + lat3)/ 3.0);
+        result2.push([(lat1 + lat2 + lat3)/ 3.0, longitude]);
+    }
+    return result2;
 }
 
 impl CalculatePrecipitation {
@@ -63,6 +73,13 @@ impl CalculatePrecipitation {
                 let w2 = (itcz[i - 1][1] - longitude).abs() / itcz_interval;
                 let itcz_lat = w1 * itcz[i - 1][0] + w2 * itcz[i][0];
                 itcz_distance = latitude - itcz_lat;
+                // if latitude >= itcz_lat {
+                //     itcz_distance = (latitude - itcz_lat) * (90.0 - itcz_lat.abs()) / 90.0;
+                // } else {
+                //     itcz_distance = (latitude - itcz_lat) * (itcz_lat.abs() - 90.0) / 90.0;
+                // }
+                // itcz_distance = itcz_lat + (90.0 - itcz_lat) * latitude / 90.0;
+                // itcz_distance = (latitude + (90.0 - itcz_lat) * latitude / 90.0) / 2.0;
                 break;
             }
         }
