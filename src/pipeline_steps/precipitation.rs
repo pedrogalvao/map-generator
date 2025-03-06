@@ -90,21 +90,21 @@ impl CalculatePrecipitation {
         let mut n;
         if itcz_distance.abs() > 19.0 && itcz_distance.abs() < 33.0 {
             // init_cumulative_multiplier *= 0.7;
-            n = 3;
+            n = 2;
             max_dist = 17;
         } else if itcz_distance.abs() > 15.0 && itcz_distance.abs() < 35.0 {
             // init_cumulative_multiplier *= 0.8;
-            n = 4;
+            n = 3;
             max_dist = 17;
         } else if itcz_distance.abs() > 13.0 && itcz_distance.abs() < 37.0 {
             // init_cumulative_multiplier *= 0.9;
-            n = 5;
+            n = 4;
             max_dist = 18;
         } else if itcz_distance.abs() > 12.0 && itcz_distance.abs() < 38.0 {
-            n = 6;
+            n = 7;
             max_dist = 18;
         } else if itcz_distance.abs() > 10.0 && itcz_distance.abs() < 40.0 {
-            n = 7;
+            n = 8;
             max_dist = 19;
         } else if itcz_distance.abs() < 10.0 {
             n = 9;
