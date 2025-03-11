@@ -235,14 +235,13 @@ pub fn draw_precipitation<S: MapShape + 'static>(cmap: &CompleteMap<S>) {
     }
     let mut mv: MapView<Mollweide, S> = MapView::new();
     mv.resolution = [2000, 1000];
-    for t in 0..12 {
+    for t in 0..cmap.precipitation.len() {
         mv.time_of_year = t;
         mv.layers = vec![
             Box::new(PartialMapLayer::new(|m| &m.height, Box::new(WHITE.clone()))),
             pmap_layer!(height, DARK_MOUNTAINS),
             Box::new(RiversLayer::default()),
             pmap_layer!(precipitation, t, PRECIPITATION_COLORS),
-            pmap_layer!(height, DEFAULT_COLORS),
         ];
         mv.draw(
             &cmap,
@@ -264,16 +263,10 @@ pub fn draw_temperature<S: MapShape + 'static>(cmap: &CompleteMap<S>) {
     }
     let mut mv: MapView<Mollweide, S> = MapView::new();
     mv.resolution = [1000, 500];
-    for t in 0..24 {
+    for t in 0..cmap.temperature.len() {
         mv.time_of_year = t;
         mv.layers = vec![
-            // pmap_layer!(height, WHITE),
-            // pmap_layer!(height, DARK_MOUNTAINS),
-            Box::new(PartialMapLayer::new(
-                move |m| &m.temperature[t],
-                Box::new(TEMPERATURE_COLORS.clone()),
-            )),
-            // pmap_layer!(temperature, t, TEMPERATURE_COLORS),
+            pmap_layer!(temperature, t, TEMPERATURE_COLORS),
             Box::new(ParallelsMeridiansLayer::default()),
             Box::new(ParallelsMeridiansLayer::tropics()),
             Box::new(ParallelsMeridiansLayer::polar_circle()),

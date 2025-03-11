@@ -5,6 +5,7 @@ use std::{collections::HashMap, sync::Mutex, time::Instant};
 
 use complete_map::{load, CompleteMap};
 use configuration::{ClimateConfiguration, Configuration, ShapeEnum};
+use draw_functions::{draw_precipitation, draw_temperature};
 use map_view::view_config::{draw_with_config, img_from_config, ViewConfiguration};
 use pipeline_steps::{
     calculate_climate::CalculateClimate, define_coastlines::DefineCoastline,
@@ -128,9 +129,9 @@ fn draw(input: Json<RequestData<ViewConfiguration>>, store: &State<MapStore>) ->
         });
     };
     match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => draw_with_config(cmap, &view_config),
-        CompleteMapEnum::Cylinder(cmap) => draw_with_config(cmap, &view_config),
-        CompleteMapEnum::Flat(cmap) => draw_with_config(cmap, &view_config),
+        CompleteMapEnum::Globe(cmap) => draw_with_config(&cmap, &view_config),
+        CompleteMapEnum::Cylinder(cmap) => draw_with_config(&cmap, &view_config),
+        CompleteMapEnum::Flat(cmap) => draw_with_config(&cmap, &view_config),
     }
     Json(Message {
         message: "Ok".to_string(),
@@ -151,9 +152,9 @@ fn get_image(
     };
 
     let img = match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => img_from_config(cmap, &input_inner.params),
-        CompleteMapEnum::Cylinder(cmap) => img_from_config(cmap, &input_inner.params),
-        CompleteMapEnum::Flat(cmap) => img_from_config(cmap, &input_inner.params),
+        CompleteMapEnum::Globe(cmap) => img_from_config(&cmap, &input_inner.params),
+        CompleteMapEnum::Cylinder(cmap) => img_from_config(&cmap, &input_inner.params),
+        CompleteMapEnum::Flat(cmap) => img_from_config(&cmap, &input_inner.params),
     };
 
     let mut buffer = Vec::new();
@@ -331,7 +332,7 @@ fn post_calculate_climate(
     store: &State<MapStore>,
 ) -> Json<Message> {
     let inner_input = input.into_inner();
-    let key = inner_input.world_name;
+    let key = inner_input.world_name.clone();
     let climate_config = inner_input.params;
     let precipitation_percentiles = vec![
         (15.0, 0),
@@ -349,6 +350,25 @@ fn post_calculate_climate(
         climate_config.humidity,
     );
     apply_operation!(operation, key, store);
+    let locked_store = store.lock().unwrap();
+    let key = inner_input.world_name;
+    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&key) else {
+        return Json(Message {
+            message: format!("no map found"),
+        });
+    };
+    match cmap_enum {
+        CompleteMapEnum::Globe(cmap) => {
+            draw_precipitation(&cmap);
+            draw_temperature(&cmap);
+        }
+        CompleteMapEnum::Cylinder(cmap) => {
+            draw_precipitation(&cmap);
+        }
+        CompleteMapEnum::Flat(cmap) => {
+            draw_precipitation(&cmap);
+        }
+    };
     Json(Message {
         message: "Successfully added erosion".to_string(),
     })

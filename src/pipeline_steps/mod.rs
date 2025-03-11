@@ -31,3 +31,4 @@ pub mod translation_noise;
 pub mod util;
 pub mod vegetation;
 pub mod water_level;
+pub mod temperature;
