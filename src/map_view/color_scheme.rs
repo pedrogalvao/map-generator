@@ -2,7 +2,7 @@ use crate::pipeline_steps::climate::Climate;
 use image::{open, DynamicImage, GenericImageView, Rgba};
 use lazy_static::lazy_static;
 use rand::Rng;
-use serde::{de, Deserialize, Deserializer};
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use std::{collections::HashMap, hash::Hash};
 
 fn generate_random_color() -> Rgba<u8> {
@@ -114,6 +114,49 @@ impl TextureColorScheme {
 #[derive(Clone)]
 pub struct CategoryColorScheme {
     pub color_map: HashMap<usize, Rgba<u8>>,
+}
+
+impl<'de> Deserialize<'de> for CategoryColorScheme {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Helper {
+            color_map: HashMap<usize, [u8; 4]>,
+        }
+
+        let helper = Helper::deserialize(deserializer)?;
+        let color_map = helper
+            .color_map
+            .into_iter()
+            .map(|(k, arr)| (k, Rgba(arr)))
+            .collect();
+
+        Ok(CategoryColorScheme { color_map })
+    }
+}
+
+impl Serialize for CategoryColorScheme {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        struct Helper {
+            color_map: HashMap<usize, [u8; 4]>,
+        }
+
+        let helper = Helper {
+            color_map: self
+                .color_map
+                .iter()
+                .map(|(&k, rgba)| (k, rgba.0))
+                .collect(),
+        };
+
+        helper.serialize(serializer)
+    }
 }
 
 impl CategoryColorScheme {

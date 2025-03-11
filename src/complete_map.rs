@@ -40,7 +40,6 @@ pub struct CompleteMap<S: MapShape> {
     pub fresh_water: PartialMap<S, i32>,
     pub coastline: Option<HashSet<[usize; 2]>>,
     pub custom_pmaps: HashMap<String, PartialMap<S, usize>>,
-    #[serde(skip)]
     pub custom_color_schemes: HashMap<String, CategoryColorScheme>,
 }
 
