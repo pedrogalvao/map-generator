@@ -113,7 +113,7 @@ impl TextureColorScheme {
 
 #[derive(Clone)]
 pub struct CategoryColorScheme {
-    color_map: HashMap<usize, Rgba<u8>>,
+    pub color_map: HashMap<usize, Rgba<u8>>,
 }
 
 impl CategoryColorScheme {
