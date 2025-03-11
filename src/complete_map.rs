@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fs::File,
     io::{Read, Write},
 };
@@ -8,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 use crate::{
+    map_view::color_scheme::CategoryColorScheme,
     partial_map::PartialMap,
     pipeline_steps::{climate::Climate, rivers::River},
     shapes::map_shape::MapShape,
@@ -37,6 +39,9 @@ pub struct CompleteMap<S: MapShape> {
     pub hotspots: Vec<[f32; 2]>,
     pub fresh_water: PartialMap<S, i32>,
     pub coastline: Option<HashSet<[usize; 2]>>,
+    pub custom_pmaps: HashMap<String, PartialMap<S, usize>>,
+    #[serde(skip)]
+    pub custom_color_schemes: HashMap<String, CategoryColorScheme>,
 }
 
 impl<S: MapShape> CompleteMap<S> {
@@ -64,6 +69,8 @@ impl<S: MapShape> CompleteMap<S> {
             hotspots: vec![],
             fresh_water: PartialMap::new(0, 0),
             coastline: None,
+            custom_pmaps: HashMap::new(),
+            custom_color_schemes: HashMap::new(),
         }
     }
 

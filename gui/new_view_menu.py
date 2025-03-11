@@ -103,7 +103,17 @@ class NewViewMenu(QDialog):
         self.right_layout = QVBoxLayout(self)
         self.right_layout.addWidget(QLabel("Layers:"))
         self.layers_checkboxes = {}
-        for layer_name in LAYERS:
+
+        def req_layers():
+            headers = {'Content-Type': 'application/json'}
+            json_data = json.dumps({"world_name": self.main_window.selected_world()})
+            response = requests.get(self.main_window.backend_address + "get_layers", data=json_data, headers=headers)
+            return json.loads(response.text)
+
+        custom_layers = req_layers()
+        print("custom_layers:", custom_layers)
+
+        for layer_name in custom_layers + LAYERS:
             if layer_name.lower() in ["contour", "parallels and meridians"]:
                 continue
             self.layers_checkboxes[layer_name] = QCheckBox(layer_name)
@@ -253,7 +263,7 @@ class NewViewMenu(QDialog):
 
     def request_view(self):
         layers = []
-        for layer_name in LAYERS:
+        for layer_name in list(self.layers_checkboxes.keys()) + ["contour", "parallels and meridians"]:
             if layer_name.lower() == "contour":
                 if self.contour_color != "#00000000":
                     layers.append("contour")

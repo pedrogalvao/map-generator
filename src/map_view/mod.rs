@@ -1,5 +1,6 @@
 pub mod color_scheme;
 pub mod contour_layer;
+pub mod custom_partial_map_layer;
 pub mod layer;
 pub mod map_view;
 pub mod mountain_img_layer;

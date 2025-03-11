@@ -8,8 +8,9 @@ use configuration::{ClimateConfiguration, Configuration, ShapeEnum};
 use map_view::view_config::{draw_with_config, img_from_config, ViewConfiguration};
 use pipeline_steps::{
     calculate_climate::CalculateClimate, define_coastlines::DefineCoastline,
-    height_noise::HeightNoise, hydraulic_erosion::HydraulicErosion, pipeline_step::PipelineStep,
-    resize::Resize, smooth::Smooth, translation_noise::TranslationNoise, water_level::WaterLevel,
+    height_noise::HeightNoise, hydraulic_erosion::HydraulicErosion,
+    load_custom_layer::LoadCustomLayer, pipeline_step::PipelineStep, resize::Resize,
+    smooth::Smooth, translation_noise::TranslationNoise, water_level::WaterLevel,
 };
 use recipe::{recipe_from_image, standard_recipe};
 use rocket::{
@@ -45,6 +46,7 @@ macro_rules! apply_operation {
                 message: format!("no map found"),
             });
         };
+        dbg!(&$pipeline_step);
         match cmap_enum {
             CompleteMapEnum::Globe(cmap) => {
                 locked_store.insert($key, CompleteMapEnum::Globe($pipeline_step.apply(&cmap)));
@@ -257,6 +259,49 @@ fn load_map(input: Json<LoadConfig>, store: &State<MapStore>) -> Json<Message> {
     })
 }
 
+#[post("/load_custom_layer", format = "json", data = "<input>")]
+fn load_custom_layer(input: Json<LoadConfig>, store: &State<MapStore>) -> Json<Message> {
+    let input_inner: LoadConfig = input.into_inner();
+    let key = input_inner.world_name;
+    let filename = String::from(input_inner.file.as_str());
+    apply_operation!(LoadCustomLayer::new(filename.clone()), key.clone(), store);
+    Json(Message {
+        message: format!("Loaded layer {}!", filename),
+    })
+}
+
+#[get("/get_layers", format = "json", data = "<input>")]
+fn get_layers(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Vec<String>> {
+    let key = input.into_inner().world_name;
+    let locked_store = store.lock().unwrap();
+    let Some(cmap_enum) = &locked_store.get(&key) else {
+        return Json(vec![]);
+    };
+    match cmap_enum {
+        CompleteMapEnum::Globe(cmap) => {
+            let mut layers = vec![];
+            for key in cmap.custom_pmaps.keys() {
+                layers.push(key.clone());
+            }
+            Json(layers)
+        }
+        CompleteMapEnum::Cylinder(cmap) => {
+            let mut layers = vec![];
+            for key in cmap.custom_pmaps.keys() {
+                layers.push(key.clone());
+            }
+            Json(layers)
+        }
+        CompleteMapEnum::Flat(cmap) => {
+            let mut layers = vec![];
+            for key in cmap.custom_pmaps.keys() {
+                layers.push(key.clone());
+            }
+            Json(layers)
+        }
+    }
+}
+
 #[post("/add_noise", format = "json", data = "<input>")]
 fn add_noise(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Message> {
     let key = input.into_inner().world_name;
@@ -416,6 +461,7 @@ fn rocket() -> _ {
                 draw,
                 get_image,
                 load_map,
+                load_custom_layer,
                 generate_from_image,
                 add_noise,
                 smooth,
@@ -424,7 +470,8 @@ fn rocket() -> _ {
                 adjust_water_percentage,
                 resize,
                 post_calculate_climate,
-                get_size
+                get_size,
+                get_layers
             ],
         )
 }

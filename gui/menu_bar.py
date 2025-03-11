@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QAction, QMenuBar 
 
-from edit_requests import ClimatePopup, ResizePopup, WaterLevelPopup, add_noise_request, erosion_request, smooth_request, translation_noise_request
+from edit_requests import ClimatePopup, ResizePopup, WaterLevelPopup, add_noise_request, erosion_request, smooth_request, translation_noise_request, custom_layer_request
 from generation_menu import GenerationMenu
 from new_view_menu import NewViewMenu
 
@@ -54,6 +54,10 @@ class TopMenuBar(QMenuBar):
         climate_action = QAction("Define Climate", self.main_window)
         climate_action.triggered.connect(lambda : ClimatePopup(self.main_window).exec())
         self.edit_menu.addAction(climate_action)
+
+        custom_layer_action = QAction("Add Custom Layer", self.main_window)
+        custom_layer_action.triggered.connect(lambda : custom_layer_request(self.main_window.selected_world()))
+        self.edit_menu.addAction(custom_layer_action)
 
         add_view_action = QAction("Add View", self.main_window)
         add_view_action.triggered.connect(lambda : NewViewMenu(self.main_window).exec())
