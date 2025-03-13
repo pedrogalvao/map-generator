@@ -35,8 +35,6 @@ fn calculate_itcz<S: MapShape>(complete_map: &CompleteMap<S>, div_number: usize)
         let lat1 = result[i][0];
         let lat2 = result[(i as i32 - 1) as usize % result.len()][0];
         let lat3 = result[(i + 1) % result.len()][0];
-        dbg!(lat1, lat2, lat3);
-        dbg!((lat1 + lat2 + lat3)/ 3.0);
         result2.push([(lat1 + lat2 + lat3)/ 3.0, longitude]);
     }
     return result2;
@@ -64,7 +62,7 @@ impl CalculatePrecipitation {
             .ceil() as f32;
         let longitude = y as f32 * 360.0 / v_length - 180.0;
 
-        let mut itcz_distance = 30.0;
+        let mut itcz_distance = 9999.0;
         let itcz_interval = 360.0 / itcz.len() as f32;
         for i in 1..itcz.len() {
             let coords = itcz[i];
@@ -83,7 +81,13 @@ impl CalculatePrecipitation {
                 break;
             }
         }
-
+        if itcz_distance == 9999.0 {
+            let coords = itcz[0];
+            let w1 = (coords[1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs() / itcz_interval;
+            let w2 = (itcz[itcz.len()-1][1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs() / itcz_interval;
+            let itcz_lat = w1 * itcz[itcz.len()-1][0] + w2 * coords[0];
+            itcz_distance = latitude - itcz_lat;
+        }
         let mut max_dist;
         let mut precipitation = 0.0;
         let mut init_cumulative_multiplier = 0.8 * self.humidity;
