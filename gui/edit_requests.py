@@ -1,6 +1,7 @@
 import json
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox, QLabel, QDoubleSpinBox, QSlider, QHBoxLayout, QFileDialog
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 
 import requests
 
@@ -63,6 +64,9 @@ class OperationDialog(QDialog):
     def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
+        self.setWindowIcon(QIcon('img/planet.png'))
+        self.setWindowTitle("Parameters")
+
         QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         self.buttonBox = QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.send_request)

@@ -5,7 +5,7 @@ from threading import Thread
 from time import sleep
 from PIL import Image
 from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout, QHBoxLayout, QDialog, QColorDialog, QPushButton, QDoubleSpinBox, QDialogButtonBox, QComboBox, QFormLayout, QSpinBox, QCheckBox, QLineEdit
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QIcon, QColor
 
 import requests
 from constants import COLOR_SCHEMES, LAYERS, PROJECTIONS
@@ -17,6 +17,7 @@ class NewViewMenu(QDialog):
         super().__init__()
         self.main_window = main_window
 
+        self.setWindowIcon(QIcon('img/planet.png'))
         self.setWindowTitle("Create New View")
 
         self.layout = QHBoxLayout()

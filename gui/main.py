@@ -30,7 +30,7 @@ class MapMaker(QMainWindow):
         self.setWindowTitle("Map Maker")
         self.setGeometry(100, 100, 800, 600)
 
-        self.backend_process = subprocess.Popen(["rest_api.exe"])
+        self.backend_process = subprocess.Popen(["../target/release/rest_api.exe"])
         self.backend_address = "http://127.0.0.1:8000/"
 
         main_layout = QVBoxLayout()

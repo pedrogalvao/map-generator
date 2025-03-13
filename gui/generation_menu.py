@@ -7,7 +7,7 @@ import requests
 import json
 import re
 from PyQt5.QtWidgets import QFormLayout, QCheckBox, QDialog, QComboBox, QApplication, QPushButton, QWidget, QLineEdit, QHBoxLayout, QSlider, QDoubleSpinBox, QSpinBox, QFileDialog
-from PyQt5.QtGui import QPixmap, QCursor
+from PyQt5.QtGui import QIcon, QPixmap, QCursor
 from PyQt5.QtCore import pyqtSignal, Qt
 from new_view_menu import NewViewMenu
 
@@ -39,6 +39,7 @@ class GenerationMenu(QDialog):
     def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
+        self.setWindowIcon(QIcon('img/planet.png'))
 
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         self.setWindowTitle("Create New World")
