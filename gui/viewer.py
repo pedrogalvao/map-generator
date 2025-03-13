@@ -1,11 +1,13 @@
 from PyQt5.QtWidgets import QLabel, QSizePolicy
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QCursor
 from PyQt5.QtCore import Qt, QPoint
 import re
 
 from sortedcontainers import SortedDict
 
+from legend import generate_heightmap_legend_pixmap
 from view_menu import ViewMenu
+from constants import COLOR_SCHEMES
 
 
 class ViewImages:
@@ -46,6 +48,57 @@ def natural_sort(file_paths):
 
     return sorted(file_paths, key=natural_keys)
 
+
+class DraggableResizableLabel(QLabel):
+    def __init__(self, pixmap, parent=None):
+        super().__init__(parent)
+        self.setPixmap(pixmap)
+        self.setScaledContents(True)
+        self.resize(pixmap.size())  # Default size of the overlay
+
+        # State variables
+        self.dragging = False
+        self.resizing = False
+        self.mouse_start_pos = QPoint()
+        self.start_geometry = self.geometry()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            if self.is_in_resize_zone(event.pos()):  # Check if we are in the resize area
+                self.resizing = True
+            else:
+                self.dragging = True
+            self.mouse_start_pos = event.globalPos()
+            self.start_geometry = self.geometry()
+
+    def mouseMoveEvent(self, event):
+        if self.dragging:
+            delta = event.globalPos() - self.mouse_start_pos
+            self.move(self.start_geometry.topLeft() + delta)
+        elif self.resizing:
+            delta = event.globalPos() - self.mouse_start_pos
+            new_width = max(20, self.start_geometry.width() + delta.x())  # Prevent shrinking too much
+            new_height = max(20, self.start_geometry.height() + delta.y())
+            self.resize(new_width, new_height)
+
+    def mouseReleaseEvent(self, event):
+        self.dragging = False
+        self.resizing = False
+
+    def is_in_resize_zone(self, pos):
+        """ Check if the mouse is near the bottom-right corner for resizing """
+        return pos.x() > self.width() - 15 and pos.y() > self.height() - 15
+
+    def enterEvent(self, event):
+        """ Change cursor when hovering over the resize zone """
+        if self.is_in_resize_zone(self.mapFromGlobal(QCursor.pos())):
+            self.setCursor(Qt.SizeFDiagCursor)
+        else:
+            self.setCursor(Qt.OpenHandCursor)
+
+    def leaveEvent(self, event):
+        self.setCursor(Qt.ArrowCursor)
+
 class MapViewer(QLabel):
     def __init__(self, main_window):
         super().__init__()
@@ -56,6 +109,14 @@ class MapViewer(QLabel):
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.setStyleSheet("background-color: black;")
         self.zoom_factor = 1
+        
+        # Create legend image
+        # TODO: generate one legend per view
+        legend_pixmap = generate_heightmap_legend_pixmap(COLOR_SCHEMES["Atlas2"]["points"]).scaled(50, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.legend_label = DraggableResizableLabel(legend_pixmap, self)
+        self.legend_label.setPixmap(legend_pixmap)
+        self.legend_label.setScaledContents(True)
+        self.legend_label.move(10, self.height() - legend_pixmap.height() - 10)
 
         self.dragging = False
         self.dragging_right = False
