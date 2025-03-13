@@ -61,7 +61,7 @@ class MapViewer(QLabel):
         self.dragging_right = False
         self.drag_start_position = QPoint()
 
-        self.directory = "img/rose.png"
+        self.directory = "img/planet.png"
         self.setFocusPolicy(Qt.StrongFocus)
         self.setFocus()
         self.images = {}

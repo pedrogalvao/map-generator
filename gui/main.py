@@ -26,11 +26,11 @@ def natural_sort(file_paths):
 class MapMaker(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowIcon(QIcon('img/rose.png'))
+        self.setWindowIcon(QIcon('img/planet.png'))
         self.setWindowTitle("Map Maker")
         self.setGeometry(100, 100, 800, 600)
 
-        self.backend_process = subprocess.Popen(["../target/release/rest_api.exe"])
+        self.backend_process = subprocess.Popen(["rest_api.exe"])
         self.backend_address = "http://127.0.0.1:8000/"
 
         main_layout = QVBoxLayout()
@@ -133,7 +133,7 @@ def main():
     # window = InitialMenu()
     # window.show()
 
-    pixmap = QPixmap("img/rose.png")  # Load your splash image
+    pixmap = QPixmap("img/planet.png")  # Load your splash image
     splash = QSplashScreen(pixmap)
     splash.show()
     app.processEvents()  # Process events to receive mouse clicks

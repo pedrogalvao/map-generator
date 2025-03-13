@@ -1,5 +1,5 @@
 import json
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox, QLabel, QDoubleSpinBox, QSlider, QHBoxLayout
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox, QLabel, QDoubleSpinBox, QSlider, QHBoxLayout, QFileDialog
 from PyQt5.QtCore import Qt
 
 import requests
@@ -44,6 +44,20 @@ def add_noise_request(world_name):
     response = requests.post(BACKEND_ADDRESS + "add_noise", data=json_data, headers=headers)
     print(f'Add Noise Response status code: {response.status_code}')
 
+def custom_layer_request(world_name):
+    headers = {'Content-Type': 'application/json'}
+    file_dialog = QFileDialog()
+    file_dialog.setNameFilter("PNG (*.png)");
+    if file_dialog.exec():
+        file = file_dialog.selectedFiles()[0]
+        req_data = {
+            "world_name": world_name,
+            "file": file,
+            "shape": "Globe"
+        }
+        json_data = json.dumps(req_data)
+        response = requests.post(BACKEND_ADDRESS + "load_custom_layer", data=json_data, headers=headers)
+        print(f'Custom layer response status code: {response.status_code}')
 
 class OperationDialog(QDialog):
     def __init__(self, main_window):

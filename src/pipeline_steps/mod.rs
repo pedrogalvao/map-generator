@@ -13,6 +13,7 @@ pub mod height_noise_poles;
 pub mod hotspots;
 pub mod hydraulic_erosion;
 pub mod ice;
+pub mod load_custom_layer;
 pub mod load_height;
 pub mod mountains;
 pub mod noisy_voronoi;

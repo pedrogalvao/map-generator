@@ -1,10 +1,13 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use image::{GenericImageView, ImageBuffer, Rgba};
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 
-use crate::{complete_map::CompleteMap, shapes::map_shape::MapShape};
+use crate::{
+    complete_map::CompleteMap, map_view::color_scheme::CategoryColorScheme,
+    shapes::map_shape::MapShape,
+};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PartialMap<S: MapShape, T: Clone> {
@@ -178,4 +181,42 @@ pub fn load_from_img<S: MapShape>(
         pmap.values[img_y as usize] = line;
     }
     return pmap;
+}
+
+pub fn load_categories_from_img<S: MapShape>(
+    filename: &str,
+) -> (PartialMap<S, usize>, CategoryColorScheme) {
+    let imgbuffer = image::open(filename).expect("File not found!");
+
+    let mut pmap =
+        PartialMap::<S, usize>::new(imgbuffer.width() as usize, imgbuffer.height() as usize);
+
+    let mut colors: HashMap<Rgba<u8>, usize> = HashMap::new();
+    let mut color_map: HashMap<usize, Rgba<u8>> = HashMap::new();
+
+    let mut i: usize = 0;
+    for img_y in 0..imgbuffer.height() {
+        let mut line = vec![];
+        for img_x in 0..imgbuffer.width() {
+            let color = imgbuffer.get_pixel(img_x, img_y);
+            match colors.get(&color) {
+                Some(value) => {
+                    line.push(*value);
+                }
+                None => {
+                    colors.insert(color, i);
+                    line.push(i);
+                    color_map.insert(i, color);
+                    i += 1;
+                }
+            }
+        }
+        pmap.values[img_y as usize] = line;
+    }
+
+    let color_scheme = CategoryColorScheme {
+        color_map: color_map,
+    };
+
+    return (pmap, color_scheme);
 }

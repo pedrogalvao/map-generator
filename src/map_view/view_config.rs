@@ -21,6 +21,7 @@ use super::{
         CONTINENTALITY_COLORS, TEMPERATURE_COLORS, TEXTURE_SCHEME,
     },
     contour_layer::ContourLayer,
+    custom_partial_map_layer::CustomPartialMapLayer,
     map_view::MapView,
     mountain_img_layer::MountainImgLayer,
     parallels_meridians_layer::ParallelsMeridiansLayer,
@@ -175,7 +176,9 @@ pub fn create_view<P: Projection, S: MapShape + 'static>(
                     .push(pmap_layer!(temperature, 6, TEMPERATURE_COLORS));
             }
             _ => {
-                dbg!("Error: invalid layer name:", layer.as_str());
+                dbg!("CustomPartialMapLayer:", layer.as_str());
+                mv.layers
+                    .push(Box::new(CustomPartialMapLayer::new(layer.clone())));
             }
         }
     }
