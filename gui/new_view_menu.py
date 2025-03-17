@@ -175,7 +175,7 @@ class NewViewMenu(QDialog):
             self.parallels_color = "#8fffffff"
             self.parallels_color_button.setText(self.parallels_color)
             self.parallels_color_button.setStyleSheet("background-color:" + self.parallels_color)
-            self.height_color_combobox.setCurrentText("Atlas2")
+            self.height_color_combobox.setCurrentText("atlas")
             for layer_name in self.layers_checkboxes:
                 self.layers_checkboxes[layer_name].setChecked(False)
         elif self.templates_combobox.currentText() == "Orthographic Height":

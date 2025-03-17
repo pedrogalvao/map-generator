@@ -112,7 +112,7 @@ class MapViewer(QLabel):
         
         # Create legend image
         # TODO: generate one legend per view
-        legend_pixmap = generate_heightmap_legend_pixmap(COLOR_SCHEMES["Atlas2"]["points"]).scaled(50, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        legend_pixmap = generate_heightmap_legend_pixmap(COLOR_SCHEMES["atlas"]["points"]).scaled(50, 250, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.legend_label = DraggableResizableLabel(legend_pixmap, self)
         self.legend_label.setPixmap(legend_pixmap)
         self.legend_label.setScaledContents(True)
