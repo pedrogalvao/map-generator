@@ -7,7 +7,7 @@ PROJECTIONS = ["mollweide","equirectangular", "azimuthal", "double azimuthal", "
 # LAYERS = ["Climate", "Countries", "Ice Caps", "Plates", "Demographics", "Annual Temperature"]
 LAYERS = ["Satellite", "Climate", "Relief Shadow", "Plates", "Annual Precipitation", "Rivers", "Temperature", "Continentality", "Contour", "Mountains", "Trees", "Rhumb Lines", "Parallels and Meridians", "Paper Texture"]
 
-COLOR_SCHEMES = {}
+COLOR_SCHEMES = {"None":{"points": [[0, "#00000000"]]}}
 for filepath in glob.glob("colors/*.json"):
     with open(filepath, "r") as f:
         # print(f.read())
