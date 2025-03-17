@@ -165,6 +165,9 @@ class MapViewer(QLabel):
         # TODO
         return self.images[self.current_view][self.current_latitude][self.current_longitude][self.current_index_z]
 
+    def current_view_images(self):
+        return list(self.images[self.current_view].data.values())
+
     def display_image(self):
         if self.images[self.current_view]:
             if self.zoom_factor > 1:

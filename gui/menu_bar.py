@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QAction, QMenuBar, QFileDialog
-
+from PIL import Image
 from edit_requests import ClimatePopup, ResizePopup, WaterLevelPopup, add_noise_request, erosion_request, smooth_request, translation_noise_request, custom_layer_request
 from generation_menu import GenerationMenu
 from new_view_menu import NewViewMenu
@@ -95,11 +95,14 @@ class TopMenuBar(QMenuBar):
     def export_image(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        filepath, _ = QFileDialog.getSaveFileName(self, 
+        filepath, selected_filter = QFileDialog.getSaveFileName(self, 
             "Save File", "", "PNG (*.png);; JPEG (*.jpg);; GIF (*.gif)", options = options)
         if filepath:
-            file_extension = filepath.split(".")[-1]
+            file_extension =selected_filter.split(".")[1].split(")")[0]
             print(file_extension)
+            print(filepath)
+            if "." not in filepath.split("/")[-1] or file_extension not in filepath.split(".")[-1]:
+                filepath += "." + file_extension
             if file_extension == "png":
                 curr_img_pixmap = self.main_window.tabs.currentWidget().map_viewer.current_image()
                 curr_img_pixmap.save(filepath, "PNG")
@@ -107,4 +110,23 @@ class TopMenuBar(QMenuBar):
                 curr_img_pixmap = self.main_window.tabs.currentWidget().map_viewer.current_image()
                 curr_img_pixmap.save(filepath, "JPEG")
             elif file_extension == "gif":
-                pass
+                def create_gif_from_pixmaps(pixmap_list, output_gif, duration=500, loop=0):
+                    # Convert QPixmaps to PIL Images
+                    image_sequence = []
+                    for pixmap in pixmap_list:
+                        image = pixmap.toImage()
+                        buffer = image.bits().asstring(image.byteCount())
+                        pil_image = Image.frombytes("RGBA", (image.width(), image.height()), buffer, "raw", "BGRA")
+                        image_sequence.append(pil_image.convert("RGBA"))
+                    # Save as GIF
+                    image_sequence[0].save(
+                        output_gif,
+                        save_all=True,
+                        append_images=image_sequence[1:],
+                        duration=duration,
+                        loop=loop
+                    )
+                    print(f"GIF saved successfully: {output_gif}")
+                pixmap_list = self.main_window.tabs.currentWidget().map_viewer.current_view_images()
+                create_gif_from_pixmaps(pixmap_list, filepath, duration=5000/len(pixmap_list), loop=0)
+            
