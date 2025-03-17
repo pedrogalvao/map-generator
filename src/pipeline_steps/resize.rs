@@ -11,6 +11,7 @@ use serde::Deserialize;
 use crate::{complete_map::CompleteMap, partial_map::PartialMap, shapes::map_shape::MapShape};
 
 use super::pipeline_step::PipelineStep;
+use super::rivers::River;
 
 #[derive(Deserialize)]
 pub struct Resize {
@@ -81,6 +82,16 @@ pub fn resize_chains(chains: &Vec<[f32; 2]>) -> Vec<[f32; 2]> {
     new_values
 }
 
+pub fn resize_rivers(rivers: &mut Vec<River>, factor:f32) {
+    for river in rivers {
+        // new_values.push(chains[i-1]);
+        for point in river.iter_mut() {
+            point.position[0] = (point.position[0] as f32 * factor) as usize;
+            point.position[1] = (point.position[1] as f32 * factor) as usize;
+        }
+    }
+}
+
 fn smooth_plates<S: MapShape>(pmap: &mut PartialMap<S, usize>) {
     let mut new_values = vec![];
     for (i, row) in pmap.values.iter().enumerate() {
@@ -133,6 +144,8 @@ impl<S: MapShape> PipelineStep<S> for Resize {
         output_map.andean_chains = resize_chains(&output_map.andean_chains);
         output_map.hymalayan_chains = resize_chains(&output_map.hymalayan_chains);
         output_map.trenches = resize_chains(&output_map.trenches);
+        // output_map.trenches = 
+        resize_rivers(&mut output_map.rivers, self.factor);
         return output_map;
     }
 }
