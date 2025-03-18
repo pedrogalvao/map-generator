@@ -82,7 +82,7 @@ pub fn resize_chains(chains: &Vec<[f32; 2]>) -> Vec<[f32; 2]> {
     new_values
 }
 
-pub fn resize_rivers(rivers: &mut Vec<River>, factor:f32) {
+pub fn resize_rivers(rivers: &mut Vec<River>, factor: f32) {
     for river in rivers {
         // new_values.push(chains[i-1]);
         for point in river.iter_mut() {
@@ -144,7 +144,7 @@ impl<S: MapShape> PipelineStep<S> for Resize {
         output_map.andean_chains = resize_chains(&output_map.andean_chains);
         output_map.hymalayan_chains = resize_chains(&output_map.hymalayan_chains);
         output_map.trenches = resize_chains(&output_map.trenches);
-        // output_map.trenches = 
+        // output_map.trenches =
         resize_rivers(&mut output_map.rivers, self.factor);
         return output_map;
     }

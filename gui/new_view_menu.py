@@ -119,10 +119,9 @@ class NewViewMenu(QDialog):
             response = requests.get(self.main_window.backend_address + "get_layers", data=json_data, headers=headers)
             return json.loads(response.text)
 
-        custom_layers = req_layers()
-        print("custom_layers:", custom_layers)
+        self.custom_layers = req_layers()
 
-        for layer_name in custom_layers + LAYERS:
+        for layer_name in self.custom_layers + LAYERS:
             if layer_name.lower() in ["contour", "parallels and meridians"]:
                 continue
             self.layers_checkboxes[layer_name] = QCheckBox(layer_name)
@@ -211,7 +210,7 @@ class NewViewMenu(QDialog):
 
     def request_view(self):
         layers = []
-        for layer_name in list(self.layers_checkboxes.keys()) + ["contour", "parallels and meridians"]:
+        for layer_name in self.custom_layers + LAYERS:
             if layer_name.lower() == "contour":
                 if self.contour_color != "#00000000":
                     layers.append("contour")

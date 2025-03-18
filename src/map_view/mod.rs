@@ -13,6 +13,7 @@ pub mod rivers_layer;
 pub mod satellite;
 pub mod shadow_layer;
 pub mod texture_layer;
+pub mod tree_img_layer;
 mod util;
 pub mod view_config;
 pub mod wind_layer;
