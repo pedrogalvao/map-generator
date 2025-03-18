@@ -3,7 +3,9 @@ use std::sync::Arc;
 use rocket::tokio::time::Instant;
 
 use crate::{
-    complete_map::CompleteMap, pipeline_steps::{rivers::CreateRivers, vegetation::Vegetation}, shapes::map_shape::MapShape
+    complete_map::CompleteMap,
+    pipeline_steps::{rivers::CreateRivers, vegetation::Vegetation},
+    shapes::map_shape::MapShape,
 };
 
 use super::{
