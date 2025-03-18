@@ -6,5 +6,5 @@
 	"parallels_color": "#8fffffff",
 	"height_colors": "atlas",
 	"projection": "mollweide",
-	"layers": ["climate"]
+	"layers": ["Climate"]
 }
