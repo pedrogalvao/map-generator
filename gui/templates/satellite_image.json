@@ -1,0 +1,12 @@
+{
+	"name": "Satellite Image",
+	"land_color": "#00000000",
+	"water_color": "#00000000",
+	"contour_color": "#00000000",
+	"parallels_color": "#00000000",
+	"height_colors": "None",
+	"projection": "double orthographic",
+	"center_latitude": 25.0,
+	"rotation": 25.0,
+	"layers": ["Satellite", "Relief Shadow"]
+}

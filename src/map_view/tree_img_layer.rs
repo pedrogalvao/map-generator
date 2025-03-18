@@ -186,6 +186,10 @@ impl<P: Projection, S: MapShape> MapViewLayer<P, S> for TreeImgLayer {
         center_longitude: f32,
         complete_map: &CompleteMap<S>,
     ) {
+        if complete_map.vegetation_density.values.len() == 0 {
+            return;
+        }
+
         let i1 = Instant::now();
 
         let Ok(icon) = open("img/tree.png") else {
