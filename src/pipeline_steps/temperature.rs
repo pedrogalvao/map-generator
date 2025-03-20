@@ -38,16 +38,20 @@ impl Temperature {
         let mut temperature_map = input_map.temperature[month as usize].clone();
         for i in 0..temperature_map.values.len() {
             let [latitude, _] = temperature_map.convert_coords(i, 0);
-            let incidence_angle = latitude + self.axial_tilt * ((month as f32 / total_months as f32) * 2.0 * PI).cos();
-            let day_duration = (- (latitude * PI / 180.0).tan() * ((90.0 - incidence_angle) * PI / 180.0).tan()).acos();
+            let incidence_angle = latitude
+                + self.axial_tilt * ((month as f32 / total_months as f32) * 2.0 * PI).cos();
+            let day_duration = (-(latitude * PI / 180.0).tan()
+                * ((90.0 - incidence_angle) * PI / 180.0).tan())
+            .acos();
             for j in 0..temperature_map.values[i].len() {
                 let [latitude, longitude] = temperature_map.convert_coords(i, j);
                 let height = input_map.height.get(latitude, longitude);
                 let albedo = 0.4;
-                let absorbed_radiation = albedo * day_duration * (incidence_angle * PI / 180.0).cos().max(0.0);
+                let absorbed_radiation =
+                    albedo * day_duration * (incidence_angle * PI / 180.0).cos().max(0.0);
                 todo!();
                 // let mut temperature;
-                // temperature = 
+                // temperature =
                 // temperature_map.values[i][j] = temperature;
             }
         }

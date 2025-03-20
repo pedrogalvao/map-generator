@@ -32,6 +32,7 @@ use super::{
     rivers_layer::RiversLayer,
     satellite::SatelliteLayer,
     texture_layer::TextureLayer,
+    tree_img_layer::TreeImgLayer,
 };
 
 use image::{ImageBuffer, Rgba};
@@ -174,6 +175,9 @@ pub fn create_view<P: Projection, S: MapShape + 'static>(
             "temperature" => {
                 mv.layers
                     .push(pmap_layer!(temperature, 6, TEMPERATURE_COLORS));
+            }
+            "trees" => {
+                mv.layers.push(Box::new(TreeImgLayer::new()));
             }
             _ => {
                 dbg!("CustomPartialMapLayer:", layer.as_str());

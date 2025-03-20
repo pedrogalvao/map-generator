@@ -275,6 +275,12 @@ impl<S: MapShape> PipelineStep<S> for CreateRivers {
         let mut output_map = input_map.clone();
         output_map.fresh_water =
             PartialMap::new(output_map.height.circunference, output_map.height.height);
+        if output_map.fresh_water.values[0].len() != input_map.height.values[0].len() {
+            for i in 0..input_map.height.values.len() {
+                output_map.fresh_water.values[i] = vec![0; input_map.height.values[i].len()];
+            }
+        }
+
         let start_points: Vec<[usize; 2]> = get_start_points_from_precipitation(input_map);
         'river_creation_loop: for start_point in start_points {
             if output_map.height.values[start_point[0]][start_point[1]] <= 0 {

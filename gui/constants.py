@@ -10,5 +10,4 @@ LAYERS = ["Satellite", "Climate", "Relief Shadow", "Plates", "Annual Precipitati
 COLOR_SCHEMES = {"None":{"points": [[0, "#00000000"]]}}
 for filepath in glob.glob("colors/*.json"):
     with open(filepath, "r") as f:
-        # print(f.read())
         COLOR_SCHEMES[filepath.split("/")[-1].split("\\")[-1].split(".")[0]] = json.loads(f.read())

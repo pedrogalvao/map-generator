@@ -35,7 +35,7 @@ fn calculate_itcz<S: MapShape>(complete_map: &CompleteMap<S>, div_number: usize)
         let lat1 = result[i][0];
         let lat2 = result[(i as i32 - 1) as usize % result.len()][0];
         let lat3 = result[(i + 1) % result.len()][0];
-        result2.push([(lat1 + lat2 + lat3)/ 3.0, longitude]);
+        result2.push([(lat1 + lat2 + lat3) / 3.0, longitude]);
     }
     return result2;
 }
@@ -83,9 +83,12 @@ impl CalculatePrecipitation {
         }
         if itcz_distance == 9999.0 {
             let coords = itcz[0];
-            let w1 = (coords[1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs() / itcz_interval;
-            let w2 = (itcz[itcz.len()-1][1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs() / itcz_interval;
-            let itcz_lat = w1 * itcz[itcz.len()-1][0] + w2 * coords[0];
+            let w1 =
+                (coords[1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs() / itcz_interval;
+            let w2 = (itcz[itcz.len() - 1][1].rem_euclid(360.0) - longitude.rem_euclid(360.0))
+                .abs()
+                / itcz_interval;
+            let itcz_lat = w1 * itcz[itcz.len() - 1][0] + w2 * coords[0];
             itcz_distance = latitude - itcz_lat;
         }
         let mut max_dist;

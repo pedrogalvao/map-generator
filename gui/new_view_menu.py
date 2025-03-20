@@ -119,10 +119,9 @@ class NewViewMenu(QDialog):
             response = requests.get(self.main_window.backend_address + "get_layers", data=json_data, headers=headers)
             return json.loads(response.text)
 
-        custom_layers = req_layers()
-        print("custom_layers:", custom_layers)
+        self.custom_layers = req_layers()
 
-        for layer_name in custom_layers + LAYERS:
+        for layer_name in self.custom_layers + LAYERS:
             if layer_name.lower() in ["contour", "parallels and meridians"]:
                 continue
             self.layers_checkboxes[layer_name] = QCheckBox(layer_name)
@@ -172,7 +171,16 @@ class NewViewMenu(QDialog):
         template_name = self.templates_combobox.currentText()
         if template_name in self.templates:
             selected_template = self.templates[template_name]
-            self.name_input.setText(template_name)
+            view_names = list(self.main_window.tabs.currentWidget().map_viewer.images)
+            if template_name in view_names:
+                new_view_name = template_name + " (2)"
+                i = 2
+                while new_view_name in view_names:
+                    new_view_name = template_name + " (" + str(i) + ")"
+                    i += 1
+                self.name_input.setText(new_view_name)
+            else:
+                self.name_input.setText(template_name)
             if "land_color" in selected_template:
                 self.land_color = selected_template["land_color"]
                 self.land_color_button.setText(self.land_color)
@@ -211,7 +219,7 @@ class NewViewMenu(QDialog):
 
     def request_view(self):
         layers = []
-        for layer_name in list(self.layers_checkboxes.keys()) + ["contour", "parallels and meridians"]:
+        for layer_name in self.custom_layers + LAYERS:
             if layer_name.lower() == "contour":
                 if self.contour_color != "#00000000":
                     layers.append("contour")
