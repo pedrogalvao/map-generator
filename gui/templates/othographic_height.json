@@ -1,0 +1,11 @@
+{
+	"name": "Orthographic Height",
+	"land_color": "#00000000",
+	"water_color": "#00000000",
+	"contour_color": "#00000000",
+	"parallels_color": "#00000000",
+	"height_colors": "atlas_dark_water",
+	"projection": "double orthographic",
+	"center_latitude": 25.0,
+	"rotation": 25.0
+}

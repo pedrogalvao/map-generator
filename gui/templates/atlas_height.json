@@ -1,0 +1,9 @@
+{
+	"name": "Atlas Height",
+	"land_color": "#00000000",
+	"water_color": "#00000000",
+	"contour_color": "#ff000000",
+	"parallels_color": "#8fffffff",
+	"height_colors": "atlas",
+	"projection": "mollweide"
+}

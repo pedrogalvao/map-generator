@@ -1,0 +1,15 @@
+{
+	"name": "Old Equirectangular",
+	"land_color": "#fffff3c7",
+	"water_color": "#ff306699",
+	"contour_color": "#ff000000",
+	"parallels_color": "#8f000000",
+	"height_colors": "None",
+	"projection": "equirectangular",
+	"center_latitude": 0.0,
+	"rotation": 0.0,
+	"layers": ["Paper Texture", "Mountains", "Rhumb Lines"],
+	"width": 3000,
+	"height": 1500,
+	"parallels_interval": 15
+}

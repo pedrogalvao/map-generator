@@ -41,7 +41,15 @@ class NewViewMenu(QDialog):
         height = size["height"]
 
         self.templates_combobox = QComboBox()
-        self.templates_combobox.addItems(["Custom", "Atlas Height", "Orthographic Height", "Climate", "Old Azimuthal", "Old Equirectangular"])
+        
+        self.templates = {}
+        template_files = glob.glob("templates/*.json")
+        for filepath in template_files:
+            with open(filepath, "r") as f:
+                template = json.loads(f.read())
+                self.templates[template["name"]] = template
+        self.templates_combobox.addItems(["Custom"])
+        self.templates_combobox.addItems(list(self.templates.keys()))
         self.templates_combobox.currentTextChanged.connect(self.choose_template)
         self.left_layout.addRow("Template", self.templates_combobox)
 
@@ -161,106 +169,45 @@ class NewViewMenu(QDialog):
     def choose_template(self):
         self.center_latitude_input.setValue(0.0)
         self.rotation_input.setValue(0.0)
-        if self.templates_combobox.currentText() == "Atlas Height":
-            self.name_input.setText("Atlas Height")
-            self.land_color = "#00000000"
-            self.land_color_button.setText(self.land_color)
-            self.land_color_button.setStyleSheet("background-color:" + self.land_color)
-            self.water_color = "#00000000"
-            self.water_color_button.setText(self.water_color)
-            self.water_color_button.setStyleSheet("background-color:" + self.water_color)
-            self.contour_color = "#ff000000"
-            self.contour_color_button.setText(self.contour_color)
-            self.contour_color_button.setStyleSheet("background-color:" + self.contour_color)
-            self.parallels_color = "#8fffffff"
-            self.parallels_color_button.setText(self.parallels_color)
-            self.parallels_color_button.setStyleSheet("background-color:" + self.parallels_color)
-            self.height_color_combobox.setCurrentText("Atlas2")
+        template_name = self.templates_combobox.currentText()
+        if template_name in self.templates:
+            selected_template = self.templates[template_name]
+            self.name_input.setText(template_name)
+            if "land_color" in selected_template:
+                self.land_color = selected_template["land_color"]
+                self.land_color_button.setText(self.land_color)
+                self.land_color_button.setStyleSheet("background-color:" + self.land_color)
+            if "water_color" in selected_template:
+                self.water_color = selected_template["water_color"]
+                self.water_color_button.setText(self.water_color)
+                self.water_color_button.setStyleSheet("background-color:" + self.water_color)
+            if "contour_color" in selected_template:
+                self.contour_color = selected_template["contour_color"]
+                self.contour_color_button.setText(self.contour_color)
+                self.contour_color_button.setStyleSheet("background-color:" + self.contour_color)
+            if "parallels_color" in selected_template:
+                self.parallels_color = selected_template["parallels_color"]
+                self.parallels_color_button.setText(self.parallels_color)
+                self.parallels_color_button.setStyleSheet("background-color:" + self.parallels_color)
+            if "parallels_interval" in selected_template:
+                self.parallels_interval_input.setValue(int(selected_template["parallels_interval"]))
+            if "height_colors" in selected_template:
+                self.height_color_combobox.setCurrentText(selected_template["height_colors"])
+            if "projection" in selected_template:
+                self.projection_combobox.setCurrentText(selected_template["projection"])
+            if "center_latitude" in selected_template:
+                self.center_latitude_input.setValue(selected_template["center_latitude"])
+            if "rotation" in selected_template:
+                self.rotation_input.setValue(selected_template["rotation"])
             for layer_name in self.layers_checkboxes:
-                self.layers_checkboxes[layer_name].setChecked(False)
-        elif self.templates_combobox.currentText() == "Orthographic Height":
-            self.name_input.setText("Orthographic Height")
-            self.land_color = "#00000000"
-            self.land_color_button.setText(self.land_color)
-            self.land_color_button.setStyleSheet("background-color:" + self.land_color)
-            self.water_color = "#00000000"
-            self.water_color_button.setText(self.water_color)
-            self.water_color_button.setStyleSheet("background-color:" + self.water_color)
-            self.contour_color = "#00000000"
-            self.contour_color_button.setText(self.contour_color)
-            self.contour_color_button.setStyleSheet("background-color:" + self.contour_color)
-            self.parallels_color = "#00000000"
-            self.parallels_color_button.setText(self.parallels_color)
-            self.parallels_color_button.setStyleSheet("background-color:" + self.parallels_color)
-            self.projection_combobox.setCurrentText("double orthographic")
-            self.height_color_combobox.setCurrentText("Atlas Dark Water")
-            self.center_latitude_input.setValue(25.0)
-            self.rotation_input.setValue(25.0)
-            for layer_name in self.layers_checkboxes:
-                self.layers_checkboxes[layer_name].setChecked(False)
-        elif self.templates_combobox.currentText() == "Climate":
-            self.name_input.setText("Climate")
-            self.land_color = "#00000000"
-            self.land_color_button.setText(self.land_color)
-            self.land_color_button.setStyleSheet("background-color:" + self.land_color)
-            self.water_color = "#00000000"
-            self.water_color_button.setText(self.water_color)
-            self.water_color_button.setStyleSheet("background-color:" + self.water_color)
-            self.contour_color = "#ff000000"
-            self.contour_color_button.setText(self.contour_color)
-            self.contour_color_button.setStyleSheet("background-color:" + self.contour_color)
-            self.parallels_color = "#8fffffff"
-            self.parallels_color_button.setText(self.parallels_color)
-            self.parallels_color_button.setStyleSheet("background-color:" + self.parallels_color)
-            self.height_color_combobox.setCurrentText("Atlas2")
-            for layer_name in self.layers_checkboxes:
-                self.layers_checkboxes[layer_name].setChecked(False)
-            self.layers_checkboxes["Climate"].setChecked(True)
-        elif self.templates_combobox.currentText() == "Old Azimuthal":
-            self.name_input.setText("Old Azimuthal")
-            self.width_input.setValue(3000)
-            self.height_input.setValue(1500)
-            self.projection_combobox.setCurrentText("double azimuthal")
-            self.land_color = "#fffff3c7"
-            self.land_color_button.setText(self.land_color)
-            self.land_color_button.setStyleSheet("background-color:" + self.land_color)
-            self.water_color = "#fff0ddb8"
-            self.water_color_button.setText(self.water_color)
-            self.water_color_button.setStyleSheet("background-color:" + self.water_color)
-            self.contour_color = "#ff000000"
-            self.contour_color_button.setText(self.contour_color)
-            self.contour_color_button.setStyleSheet("background-color:" + self.contour_color)
-            self.parallels_color = "#8f000000"
-            self.parallels_color_button.setText(self.parallels_color)
-            self.parallels_color_button.setStyleSheet("background-color:" + self.parallels_color)
-            self.height_color_combobox.setCurrentText("None")
-            for layer_name in self.layers_checkboxes:
-                self.layers_checkboxes[layer_name].setChecked(False)
-            self.layers_checkboxes["Paper Texture"].setChecked(True)
-            self.layers_checkboxes["Mountains"].setChecked(True)
-        elif self.templates_combobox.currentText() == "Old Equirectangular":
-            self.name_input.setText("Old Equirectangular")
-            self.width_input.setValue(3000)
-            self.height_input.setValue(1500)
-            self.projection_combobox.setCurrentText("equirectangular")
-            self.land_color = "#fffff3c7"
-            self.land_color_button.setText(self.land_color)
-            self.land_color_button.setStyleSheet("background-color:" + self.land_color)
-            self.water_color = "#fff0ddb8"
-            self.water_color_button.setText(self.water_color)
-            self.water_color_button.setStyleSheet("background-color:" + self.water_color)
-            self.contour_color = "#ff000000"
-            self.contour_color_button.setText(self.contour_color)
-            self.contour_color_button.setStyleSheet("background-color:" + self.contour_color)
-            self.parallels_color = "#8f000000"
-            self.parallels_color_button.setText(self.parallels_color)
-            self.parallels_color_button.setStyleSheet("background-color:" + self.parallels_color)
-            self.height_color_combobox.setCurrentText("None")
-            for layer_name in self.layers_checkboxes:
-                self.layers_checkboxes[layer_name].setChecked(False)
-            self.layers_checkboxes["Paper Texture"].setChecked(True)
-            self.layers_checkboxes["Rhumb Lines"].setChecked(True)
-            self.layers_checkboxes["Mountains"].setChecked(True)
+                if "layers" in selected_template and layer_name in selected_template["layers"]:
+                    self.layers_checkboxes[layer_name].setChecked(True)
+                else:
+                    self.layers_checkboxes[layer_name].setChecked(False)
+            if "width" in selected_template:
+                self.width_input.setValue(selected_template["width"])
+            if "height" in selected_template:
+                self.height_input.setValue(selected_template["height"])
 
     def request_view(self):
         layers = []

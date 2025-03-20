@@ -60,5 +60,5 @@ def generate_heightmap_legend_pixmap(height_color_pairs):
     return pixmap
 
 
-generate_heightmap_legend(COLOR_SCHEMES["Wikipedia"]["points"],"a.png")
-generate_heightmap_legend(COLOR_SCHEMES["Atlas2"]["points"],"b.png")
+# generate_heightmap_legend(COLOR_SCHEMES["Wikipedia"]["points"],"a.png")
+# generate_heightmap_legend(COLOR_SCHEMES["Atlas2"]["points"],"b.png")

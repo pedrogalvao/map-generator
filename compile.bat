@@ -10,3 +10,4 @@ xcopy "gui\img" "installation\img" /y /e /i
 xcopy "example1.png" "installation" /y /e /i
 xcopy "example2.png" "installation" /y /e /i
 xcopy "example3.png" "installation" /y /e /i
+xcopy "gui\colors" "installation\colors" /y /e /i
