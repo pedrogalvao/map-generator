@@ -14,7 +14,13 @@ class InitialTab(QWidget):
         text_layout = QVBoxLayout()
 
         self.description = QLabel()
-        self.description.setText("<h1>Welcome</h1><p>Get started by creating a new world or opening a file.</p>")
+        self.description.setText(""
+        "<h1>Welcome</h1>" + 
+        "<p>Get started by creating a new world or opening a file.</p>" +
+        "<p>Once the world is created, create a new view to visualize it.</p>" +
+        "<p>Drag with the left mouse button to rotate the map and with the right button to move it.</p>" +
+        "<p>Use the mouse wheel to zoom in and out.</p>"
+        )
         self.description.setWordWrap(True)
 
         text_layout.addWidget(self.description)

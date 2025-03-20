@@ -113,7 +113,7 @@ fn create_height_pipeline<T: MapShape + 'static>(config: &Configuration) -> MapP
     map_pipeline.add_step(step);
 
     let exp = ((config.width_pixels as f32 / 250.0).ln() / (2.0 as f32).ln()) as u32;
-    for k in 1..exp + 1 {
+    for k in 1..exp-1 {
         map_pipeline.add_step(Resize { factor: 2.0 });
 
         let step = AddMountains::new(config.seed + k + 100, 50.0, 0.6 as f32);
@@ -246,6 +246,8 @@ pub fn standard_recipe<T: MapShape + 'static>(config: &Configuration) -> MapPipe
     if config.make_climate {
         map_pipeline.add_step(CalculateClimate::new(&vec![], 25.0, -35.0, 1.0));
     }
+    
+    map_pipeline.add_step(Resize { factor: 2.0 });
     map_pipeline.add_step(DefineCoastline {});
 
     map_pipeline
