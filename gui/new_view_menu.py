@@ -171,7 +171,16 @@ class NewViewMenu(QDialog):
         template_name = self.templates_combobox.currentText()
         if template_name in self.templates:
             selected_template = self.templates[template_name]
-            self.name_input.setText(template_name)
+            view_names = list(self.main_window.tabs.currentWidget().map_viewer.images)
+            if template_name in view_names:
+                new_view_name = template_name + " (2)"
+                i = 2
+                while new_view_name in view_names:
+                    new_view_name = template_name + " (" + str(i) + ")"
+                    i += 1
+                self.name_input.setText(new_view_name)
+            else:
+                self.name_input.setText(template_name)
             if "land_color" in selected_template:
                 self.land_color = selected_template["land_color"]
                 self.land_color_button.setText(self.land_color)
