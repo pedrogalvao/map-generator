@@ -82,6 +82,9 @@ impl TemperatureFromContinentality {
                 } else if height >= 0 && latitude.abs() < 50.0 {
                     temperature += ((50.0 - latitude.abs()) / 50.0) * 4.0;
                 }
+                if latitude.abs() >= 60.0 {
+                    temperature -= continentality as f32 * (latitude.abs() - 60.0) / 30.0;
+                }
                 temperature_map.values[i][j] = temperature;
             }
         }
