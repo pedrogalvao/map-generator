@@ -26,7 +26,7 @@ pub struct CompleteMap<S: MapShape> {
     pub annual_precipitation: PartialMap<S, i32>,
     pub atm_pressure: Vec<PartialMap<S, i32>>,
     pub climate: PartialMap<S, Climate>,
-    pub continentality: PartialMap<S, i32>,
+    pub continentality: PartialMap<S, f32>,
     pub ice_height: Vec<PartialMap<S, i32>>,
     pub rivers: Vec<River>,
     pub tectonic_edges: Vec<[f32; 2]>,

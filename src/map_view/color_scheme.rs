@@ -346,13 +346,13 @@ lazy_static! {
             (30.0, Rgba([255, 0, 0, 255])),
         ]
     };
-    pub static ref CONTINENTALITY_COLORS: GradientColorScheme = GradientColorScheme {
+    pub static ref CONTINENTALITY_COLORS: GradientColorSchemef32 = GradientColorSchemef32 {
         points: vec![
-            (-30, Rgba([0, 0, 255, 255])),
-            (0, Rgba([255, 255, 255, 255])),
-            (10, Rgba([0, 255, 0, 255])),
-            (20, Rgba([255, 255, 0, 255])),
-            (30, Rgba([255, 0, 0, 255])),
+            (-30.0, Rgba([0, 0, 255, 255])),
+            (0.0, Rgba([255, 255, 255, 255])),
+            (10.0, Rgba([0, 255, 0, 255])),
+            (20.0, Rgba([255, 255, 0, 255])),
+            (30.0, Rgba([255, 0, 0, 255])),
         ]
     };
     pub static ref PRESSURE_COLORS: GradientColorScheme = GradientColorScheme {

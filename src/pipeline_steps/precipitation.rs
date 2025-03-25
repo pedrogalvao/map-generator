@@ -91,9 +91,23 @@ impl CalculatePrecipitation {
             let itcz_lat = w1 * itcz[itcz.len() - 1][0] + w2 * coords[0];
             itcz_distance = latitude - itcz_lat;
         }
+        if latitude.abs() >= 45.0 {
+            let weight = (latitude.abs() - 35.0) / 30.0;
+            itcz_distance = latitude * weight + itcz_distance * (1.0 - weight);
+        } else if latitude.abs() < 15.0 {
+            let weight = (15.0 - latitude.abs()) / 30.0;
+            itcz_distance = latitude * weight + itcz_distance * (1.0 - weight);
+        }
+
         let mut max_dist;
         let mut precipitation = 0.0;
-        let mut init_cumulative_multiplier = 0.8 * self.humidity;
+        let cont: f32 = complete_map.continentality.get(latitude, longitude) as f32;
+        let monsoon_time_factor =
+            (2.0 * PI * time_of_year as f32 / 12.0).cos() * latitude / latitude.abs();
+        let monsoon_effect = (1.0 + 0.7 * monsoon_time_factor * cont / 20.0)
+            .max(0.7)
+            .min(1.7);
+        let mut init_cumulative_multiplier = 0.8 * self.humidity * monsoon_effect;
         let mut n;
         if itcz_distance.abs() > 19.0 && itcz_distance.abs() < 33.0 {
             // init_cumulative_multiplier *= 0.7;
@@ -121,6 +135,8 @@ impl CalculatePrecipitation {
             n = 7;
             max_dist = 28;
         }
+
+        max_dist = (max_dist as f32 * monsoon_effect) as i32;
 
         let mut angle_displacement = 0.0;
         if (itcz_distance > 15.0 && itcz_distance < 25.0)

@@ -95,3 +95,25 @@ pub fn rotate_vector(v: [f32; 2], angle: f32) -> [f32; 2] {
     let y_new = v[0] * sin_angle + v[1] * cos_angle;
     [x_new, y_new]
 }
+
+pub fn rotate_coords(lat: f32, lon: f32, distance: f32, bearing: f32) -> [f32; 2] {
+    // Convert latitude and longitude from degrees to radians
+    let lat_rad = lat.to_radians();
+    let lon_rad = lon.to_radians();
+
+    let radius = 1.0;
+
+    let new_lat_rad = (lat_rad.sin() * (distance / radius).cos())
+        + (lat_rad.cos() * (distance / radius).sin() * bearing.cos());
+    let new_lat_rad = new_lat_rad.asin();
+
+    let new_lon_rad = lon_rad
+        + ((bearing.sin() * (distance / radius).sin() * lat_rad.cos())
+            .atan2((distance / radius).cos() - (lat_rad.sin() * new_lat_rad.sin())));
+
+    // Convert radians back to degrees
+    let new_lat = new_lat_rad.to_degrees();
+    let new_lon = new_lon_rad.to_degrees();
+
+    [new_lat, new_lon]
+}

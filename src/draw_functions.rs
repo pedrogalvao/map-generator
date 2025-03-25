@@ -6,9 +6,10 @@ use crate::{
     complete_map::CompleteMap,
     map_view::{
         color_scheme::{
-            ClimateColorScheme, ANNUAL_PRECIPITATION_COLORS, ATLAS_COLORS, DARK_MOUNTAINS,
-            DEFAULT_COLORS, HIGH_CONTRAST_COLORS, LAND_WATER_COLORS, OLD_STYLE_COLORS,
-            PRECIPITATION_COLORS, PRESSURE_COLORS, TEMPERATURE_COLORS, TEXTURE_SCHEME, WHITE,
+            ClimateColorScheme, ANNUAL_PRECIPITATION_COLORS, ATLAS_COLORS, CONTINENTALITY_COLORS,
+            DARK_MOUNTAINS, DEFAULT_COLORS, HIGH_CONTRAST_COLORS, LAND_WATER_COLORS,
+            OLD_STYLE_COLORS, PRECIPITATION_COLORS, PRESSURE_COLORS, TEMPERATURE_COLORS,
+            TEXTURE_SCHEME, WHITE,
         },
         contour_layer::ContourLayer,
         map_view::MapView,
@@ -369,7 +370,7 @@ pub fn draw_continentality<S: MapShape + 'static>(cmap: &CompleteMap<S>) {
     mv.layers = vec![
         pmap_layer!(height, WHITE),
         pmap_layer!(height, DARK_MOUNTAINS),
-        pmap_layer!(continentality, PRECIPITATION_COLORS),
+        pmap_layer!(continentality, CONTINENTALITY_COLORS),
         Box::new(ContourLayer::new(
             move |m| &m.height,
             Rgba([0, 0, 0, 255]),
