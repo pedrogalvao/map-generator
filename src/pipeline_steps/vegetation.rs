@@ -22,7 +22,7 @@ impl fmt::Debug for Vegetation {
 impl Vegetation {
     pub fn new() -> Self {
         Vegetation {
-            noise: CustomNoise::new(0, 100.0, 30.0),
+            noise: CustomNoise::new(0, 150.0, 25.0),
             noise2: CustomNoise::new(1, 200.0, 25.0),
             noise3: CustomNoise::new(2, 400.0, 15.0),
         }
@@ -82,11 +82,11 @@ impl<S: MapShape> PipelineStep<S> for Vegetation {
 
         let mut vegetation = 500 + 60 * 8;
         if aridity_index > 0.0 {
-            vegetation = vegetation.min((750 - (1.5 * aridity_index) as i32 + noise_value).max(0));
+            vegetation = vegetation.min((800 - (1.6 * aridity_index) as i32 + noise_value).max(0));
         }
 
         if min_precipitation < 60 {
-            vegetation = vegetation.min(400 + min_precipitation * 8 + noise_value);
+            vegetation = vegetation.min(450 + min_precipitation * 8 + noise_value);
         }
 
         return vegetation + noise_value;

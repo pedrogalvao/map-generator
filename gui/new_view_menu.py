@@ -267,6 +267,7 @@ class NewViewMenu(QDialog):
         }
         req_data = {
             "world_name":self.main_window.selected_world(),
+            "request_priority": 1,
             "params":view_config
         }
         

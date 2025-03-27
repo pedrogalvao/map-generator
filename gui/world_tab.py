@@ -48,6 +48,7 @@ class WorldTab(QFrame):
             self.map_viewer.images[view_name].add(req_number, pixmap)
 
         n_sent_requests = 0
+        req_data["request_priority"] = 1
         for i in [0, 15, 25, 5, 20, 10]:
             rotation = (i * 360 / 30) % 360
             if rotation > 180:
@@ -60,6 +61,7 @@ class WorldTab(QFrame):
             while len(self.map_viewer.images[view_name].data) < n_sent_requests - 2:
                 print(len(self.map_viewer.images[view_name].data), i)
                 sleep(1)
+        req_data["request_priority"] = 2
         for i in range(30):
             if i % 5 == 0:
                 continue

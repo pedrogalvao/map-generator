@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate rocket;
+use thread_priority::{set_current_thread_priority, ThreadPriority};
 
 use std::{collections::HashMap, sync::Mutex, time::Instant};
 
@@ -65,6 +66,7 @@ macro_rules! apply_operation {
 #[derive(Deserialize)]
 struct RequestData<T> {
     world_name: String,
+    request_priority: u8,
     params: T,
 }
 
@@ -145,29 +147,45 @@ fn get_image(
     input: Json<RequestData<ViewConfiguration>>,
     store: &State<MapStore>,
 ) -> Option<(ContentType, Vec<u8>)> {
-    let input_inner = input.into_inner();
 
-    let locked_store = store.lock().unwrap();
-    let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&input_inner.world_name)
-    else {
-        return None;
+    let result = match input.request_priority {
+        1 => {
+            set_current_thread_priority(ThreadPriority::Max)
+        },
+        _ => {
+            set_current_thread_priority(ThreadPriority::Min)
+        }
     };
+    
+    if result.is_ok() {
+        let input_inner = input.into_inner();
 
-    let img = match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => img_from_config(&cmap, &input_inner.params),
-        CompleteMapEnum::Cylinder(cmap) => img_from_config(&cmap, &input_inner.params),
-        CompleteMapEnum::Flat(cmap) => img_from_config(&cmap, &input_inner.params),
-    };
+        let locked_store = store.lock().unwrap();
+        let Some(cmap_enum): Option<&CompleteMapEnum> = locked_store.get(&input_inner.world_name)
+        else {
+            return None;
+        };
 
-    let mut buffer = Vec::new();
-    if image::codecs::png::PngEncoder::new(&mut buffer)
-        .encode(&img, img.width(), img.height(), image::ColorType::Rgba8)
-        .is_ok()
-    {
-        Some((ContentType::PNG, buffer))
+        let img = match cmap_enum {
+            CompleteMapEnum::Globe(cmap) => img_from_config(&cmap, &input_inner.params),
+            CompleteMapEnum::Cylinder(cmap) => img_from_config(&cmap, &input_inner.params),
+            CompleteMapEnum::Flat(cmap) => img_from_config(&cmap, &input_inner.params),
+        };
+
+        let mut buffer = Vec::new();
+        if image::codecs::png::PngEncoder::new(&mut buffer)
+            .encode(&img, img.width(), img.height(), image::ColorType::Rgba8)
+            .is_ok()
+        {
+            Some((ContentType::PNG, buffer))
+        } else {
+            None
+        }
     } else {
+        dbg!("Failed to set priority.");
         None
     }
+
 }
 
 #[derive(Deserialize)]
@@ -446,27 +464,33 @@ struct BasicRequestParams {
 
 #[get("/get_size", format = "json", data = "<input>")]
 fn get_size(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Dimensions> {
-    let key = input.into_inner().world_name;
-    let locked_store = store.lock().unwrap();
-    let Some(cmap_enum) = &locked_store.get(&key) else {
-        return Json(Dimensions {
-            width: 0,
-            height: 0,
-        });
-    };
-    match cmap_enum {
-        CompleteMapEnum::Globe(cmap) => Json(Dimensions {
-            width: 2 * cmap.height.values.len(),
-            height: cmap.height.values.len(),
-        }),
-        CompleteMapEnum::Cylinder(cmap) => Json(Dimensions {
-            width: cmap.height.values[0].len(),
-            height: cmap.height.values.len(),
-        }),
-        CompleteMapEnum::Flat(cmap) => Json(Dimensions {
-            width: cmap.height.values[0].len(),
-            height: cmap.height.values.len(),
-        }),
+    let result = set_current_thread_priority(ThreadPriority::Max);
+    if result.is_ok() {
+        let key = input.into_inner().world_name;
+        let locked_store: std::sync::MutexGuard<'_, HashMap<String, CompleteMapEnum>> = store.lock().unwrap();
+        let Some(cmap_enum) = &locked_store.get(&key) else {
+            return Json(Dimensions {
+                width: 0,
+                height: 0,
+            });
+        };
+        match cmap_enum {
+            CompleteMapEnum::Globe(cmap) => Json(Dimensions {
+                width: 2 * cmap.height.values.len(),
+                height: cmap.height.values.len(),
+            }),
+            CompleteMapEnum::Cylinder(cmap) => Json(Dimensions {
+                width: cmap.height.values[0].len(),
+                height: cmap.height.values.len(),
+            }),
+            CompleteMapEnum::Flat(cmap) => Json(Dimensions {
+                width: cmap.height.values[0].len(),
+                height: cmap.height.values.len(),
+            }),
+        }
+    }
+    else {
+        todo!()
     }
 }
 

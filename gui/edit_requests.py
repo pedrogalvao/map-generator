@@ -104,6 +104,7 @@ class OperationDialog(QDialog):
             options_values[k.lower().replace(" ", "_")] = self.options[k].value()
         req_data = {
             "world_name": self.main_window.selected_world(),
+            "request_priority": 1,
             "params": options_values
         }
         json_data = json.dumps(req_data)
