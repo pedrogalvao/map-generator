@@ -19,8 +19,8 @@ fn calculate_itcz<S: MapShape>(complete_map: &CompleteMap<S>, div_number: usize)
         let longitude = i as f32 * 4.0;
         let mut hottest_latitude = 0.0;
         let mut highest_temperature = 0.0;
-        for j in -45..=45 {
-            let latitude = j as f32 * 2.0;
+        for j in -25..=25 {
+            let latitude = j as f32;
             let temperature = complete_map.temperature[div_number].get(latitude, longitude);
             if temperature > highest_temperature {
                 hottest_latitude = latitude;
@@ -38,6 +38,39 @@ fn calculate_itcz<S: MapShape>(complete_map: &CompleteMap<S>, div_number: usize)
         result2.push([(lat1 + lat2 + lat3) / 3.0, longitude]);
     }
     return result2;
+}
+
+fn get_itcz_distance(latitude:f32, longitude:f32, itcz:&Vec<[f32; 2]>) -> f32 {
+    let mut itcz_distance = 9999.0;
+    let itcz_interval = 360.0 / itcz.len() as f32;
+    for i in 1..itcz.len() {
+        let coords = itcz[i];
+        if coords[1] >= longitude {
+            let w1 = (coords[1] - longitude).abs() / itcz_interval;
+            let w2 = (itcz[i - 1][1] - longitude).abs() / itcz_interval;
+            let itcz_lat = w1 * itcz[i - 1][0] + w2 * itcz[i][0];
+            itcz_distance = latitude - itcz_lat;
+            break;
+        }
+    }
+    if itcz_distance == 9999.0 {
+        let coords = itcz[0];
+        let w1 =
+            (coords[1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs() / itcz_interval;
+        let w2 = (itcz[itcz.len() - 1][1].rem_euclid(360.0) - longitude.rem_euclid(360.0))
+            .abs()
+            / itcz_interval;
+        let itcz_lat = w1 * itcz[itcz.len() - 1][0] + w2 * coords[0];
+        itcz_distance = latitude - itcz_lat;
+    }
+    if latitude.abs() >= 45.0 {
+        let weight = (latitude.abs() - 35.0) / 30.0;
+        itcz_distance = latitude * weight + itcz_distance * (1.0 - weight);
+    } else if latitude.abs() < 15.0 {
+        let weight = (15.0 - latitude.abs()) / 30.0;
+        itcz_distance = latitude * weight + itcz_distance * (1.0 - weight);
+    }
+    return itcz_distance;
 }
 
 impl CalculatePrecipitation {
@@ -62,42 +95,7 @@ impl CalculatePrecipitation {
             .ceil() as f32;
         let longitude = y as f32 * 360.0 / v_length - 180.0;
 
-        let mut itcz_distance = 9999.0;
-        let itcz_interval = 360.0 / itcz.len() as f32;
-        for i in 1..itcz.len() {
-            let coords = itcz[i];
-            if coords[1] >= longitude {
-                let w1 = (coords[1] - longitude).abs() / itcz_interval;
-                let w2 = (itcz[i - 1][1] - longitude).abs() / itcz_interval;
-                let itcz_lat = w1 * itcz[i - 1][0] + w2 * itcz[i][0];
-                itcz_distance = latitude - itcz_lat;
-                // if latitude >= itcz_lat {
-                //     itcz_distance = (latitude - itcz_lat) * (90.0 - itcz_lat.abs()) / 90.0;
-                // } else {
-                //     itcz_distance = (latitude - itcz_lat) * (itcz_lat.abs() - 90.0) / 90.0;
-                // }
-                // itcz_distance = itcz_lat + (90.0 - itcz_lat) * latitude / 90.0;
-                // itcz_distance = (latitude + (90.0 - itcz_lat) * latitude / 90.0) / 2.0;
-                break;
-            }
-        }
-        if itcz_distance == 9999.0 {
-            let coords = itcz[0];
-            let w1 =
-                (coords[1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs() / itcz_interval;
-            let w2 = (itcz[itcz.len() - 1][1].rem_euclid(360.0) - longitude.rem_euclid(360.0))
-                .abs()
-                / itcz_interval;
-            let itcz_lat = w1 * itcz[itcz.len() - 1][0] + w2 * coords[0];
-            itcz_distance = latitude - itcz_lat;
-        }
-        if latitude.abs() >= 45.0 {
-            let weight = (latitude.abs() - 35.0) / 30.0;
-            itcz_distance = latitude * weight + itcz_distance * (1.0 - weight);
-        } else if latitude.abs() < 15.0 {
-            let weight = (15.0 - latitude.abs()) / 30.0;
-            itcz_distance = latitude * weight + itcz_distance * (1.0 - weight);
-        }
+        let itcz_distance = get_itcz_distance(latitude, longitude, itcz);
 
         let mut max_dist;
         let mut precipitation = 0.0;

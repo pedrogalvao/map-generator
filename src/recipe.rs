@@ -109,7 +109,7 @@ fn create_height_pipeline<T: MapShape + 'static>(config: &Configuration) -> MapP
         config.water_percentage,
     ));
 
-    let step = HydraulicErosion::new(config.erosion_iterations);
+    let step = HydraulicErosion::new(5);
     map_pipeline.add_step(step);
 
     let exp = ((config.width_pixels as f32 / 250.0).ln() / (2.0 as f32).ln()) as u32;
@@ -147,7 +147,7 @@ fn create_height_pipeline<T: MapShape + 'static>(config: &Configuration) -> MapP
         let step = HeightNoisePoles::new(config.seed + 100 + k, 100.0, 200.0 / k as f32);
         map_pipeline.add_step(step);
 
-        let step = HydraulicErosion::new(config.erosion_iterations);
+        let step = HydraulicErosion::new(4);
         map_pipeline.add_step(step);
     }
 
