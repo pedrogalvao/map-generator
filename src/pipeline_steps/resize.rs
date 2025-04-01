@@ -44,6 +44,47 @@ pub fn resize<S: MapShape, T: Clone + Default>(pmap: &mut PartialMap<S, T>, fact
     pmap.values = new_values;
 }
 
+pub fn resize_f32<S: MapShape>(pmap: &mut PartialMap<S, f32>, factor: f32) {
+    let mut new_values = S::new_vec(
+        (factor * pmap.circunference as f32) as usize,
+        (factor * pmap.height as f32) as usize,
+    );
+
+    for i in 0..pmap.values.len() {
+        // even rows
+        let i2 = ((i as f32 * factor) as usize).min(new_values.len() - 1);
+        for j in 0..pmap.values[i].len() {
+            let j2 = ((j as f32 * factor) as usize).min(new_values[i2].len() - 1);
+            new_values[i2][j2] = pmap.values[i][j];
+            if j2 + 1 < new_values[i2].len() {
+                new_values[i2][j2 + 1] = (pmap.values[i][j] + pmap.values[i][j + 1]) / 2.0;
+            }
+        }
+    }
+    for i in 0..new_values.len() {
+        // odd rows
+        if i % 2 == 0 {
+            continue;
+        }
+        for j in 0..new_values[i].len() {
+            let j_up = (j as f32 * new_values[i - 1].len() as f32 / new_values[i].len() as f32)
+                as usize
+                % new_values[i - 1].len();
+            if i < new_values.len() - 1 {
+                let j_down = (j as f32 * new_values[i + 1].len() as f32
+                    / new_values[i].len() as f32) as usize
+                    % new_values[i + 1].len();
+                new_values[i][j] = (new_values[i - 1][j_up] + new_values[i + 1][j_down]) / 2.0;
+            } else {
+                new_values[i][j] = new_values[i - 1][j_up];
+            }
+        }
+    }
+    pmap.height = (factor * pmap.height as f32) as usize;
+    pmap.circunference = (factor * pmap.circunference as f32) as usize;
+    pmap.values = new_values;
+}
+
 fn pseudo_random_float(seed: u32) -> f32 {
     let mut hasher = DefaultHasher::new();
     seed.hash(&mut hasher);

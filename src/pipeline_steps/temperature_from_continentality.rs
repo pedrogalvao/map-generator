@@ -4,7 +4,10 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelI
 
 use crate::{complete_map::CompleteMap, partial_map::PartialMap, shapes::map_shape::MapShape};
 
-use super::{pipeline_step::PipelineStep, resize::resize};
+use super::{
+    pipeline_step::PipelineStep,
+    resize::{resize, resize_f32},
+};
 
 #[derive(Debug)]
 pub struct TemperatureFromContinentality {
@@ -36,7 +39,7 @@ impl TemperatureFromContinentality {
         total_months: u32,
         input_map: &CompleteMap<S>,
     ) -> PartialMap<S, f32> {
-        let mut temperature_map = PartialMap::<S, f32>::new(125, 62);
+        let mut temperature_map = PartialMap::<S, f32>::new(250, 125);
         for i in 0..temperature_map.values.len() {
             for j in 0..temperature_map.values[i].len() {
                 let [latitude, longitude] = temperature_map.convert_coords(i, j);
@@ -182,25 +185,28 @@ impl<S: MapShape> PipelineStep<S> for TemperatureFromContinentality {
                 input_map,
             ));
         }
-        output_map = SmoothTemperature::new().apply(&output_map);
-        for t in 0..output_map.temperature.len() {
-            resize(&mut output_map.temperature[t as usize], 2.0);
-        }
-        output_map = SmoothTemperature::new().apply(&output_map);
-        for t in 0..output_map.temperature.len() {
-            resize(&mut output_map.temperature[t as usize], 2.0);
-        }
-        output_map = SmoothTemperature::new().apply(&output_map);
-        for t in 0..output_map.temperature.len() {
-            resize(&mut output_map.temperature[t as usize], 2.0);
+        let mut smooth_step = SmoothTemperature::new();
+        smooth_step.pixel_distance = 1;
+        output_map = smooth_step.apply(&output_map);
+        while output_map.temperature[0].values.len() < output_map.height.values.len() {
+            let factor = (output_map.height.values.len() as f32
+                / output_map.temperature[0].values.len() as f32)
+                .min(2.0);
+            if factor == 2.0 {
+                for t in 0..output_map.temperature.len() {
+                    resize_f32(&mut output_map.temperature[t as usize], factor);
+                }
+            } else {
+                for t in 0..output_map.temperature.len() {
+                    resize(&mut output_map.temperature[t as usize], factor);
+                }
+                output_map = SmoothTemperature::new().apply(&output_map);
+            }
         }
         for t in 0..output_map.temperature.len() {
             output_map.temperature[t as usize] =
                 self.decrease_mountain_temperature(t as u32, &output_map);
         }
-        let mut smooth_step = SmoothTemperature::new();
-        smooth_step.pixel_distance = 1;
-        output_map = smooth_step.apply(&output_map);
 
         // Remaining months mirror the previous ones
         for t in self.year_divisions / 2 + 1..self.year_divisions {

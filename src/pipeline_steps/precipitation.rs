@@ -40,7 +40,7 @@ fn calculate_itcz<S: MapShape>(complete_map: &CompleteMap<S>, div_number: usize)
     return result2;
 }
 
-fn get_itcz_distance(latitude:f32, longitude:f32, itcz:&Vec<[f32; 2]>) -> f32 {
+fn get_itcz_distance(latitude: f32, longitude: f32, itcz: &Vec<[f32; 2]>) -> f32 {
     let mut itcz_distance = 9999.0;
     let itcz_interval = 360.0 / itcz.len() as f32;
     for i in 1..itcz.len() {
@@ -55,10 +55,8 @@ fn get_itcz_distance(latitude:f32, longitude:f32, itcz:&Vec<[f32; 2]>) -> f32 {
     }
     if itcz_distance == 9999.0 {
         let coords = itcz[0];
-        let w1 =
-            (coords[1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs() / itcz_interval;
-        let w2 = (itcz[itcz.len() - 1][1].rem_euclid(360.0) - longitude.rem_euclid(360.0))
-            .abs()
+        let w1 = (coords[1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs() / itcz_interval;
+        let w2 = (itcz[itcz.len() - 1][1].rem_euclid(360.0) - longitude.rem_euclid(360.0)).abs()
             / itcz_interval;
         let itcz_lat = w1 * itcz[itcz.len() - 1][0] + w2 * coords[0];
         itcz_distance = latitude - itcz_lat;
@@ -234,10 +232,12 @@ impl<S: MapShape> PipelineStep<S> for CalculatePrecipitation {
             let mut prec_map = PartialMap::new(500, 250);
             prec_map.iterate_operator(input_map, operator);
             let mut smooth_prec_map = smooth_pmap(&prec_map, 1);
-            if output_map.height.circunference > smooth_prec_map.circunference {
-                let factor =
-                    output_map.height.circunference as f32 / smooth_prec_map.circunference as f32;
+            while output_map.height.circunference > smooth_prec_map.circunference {
+                let factor = (output_map.height.circunference as f32
+                    / smooth_prec_map.circunference as f32)
+                    .min(2.0);
                 resize(&mut smooth_prec_map, factor);
+                smooth_prec_map = smooth_pmap(&smooth_prec_map, 1);
             }
             output_map.precipitation.push(smooth_prec_map);
         }

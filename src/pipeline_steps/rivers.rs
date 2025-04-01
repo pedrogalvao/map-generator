@@ -209,11 +209,10 @@ fn erosion<S: MapShape>(output_map: &mut CompleteMap<S>, river: &River) {
 fn get_start_points_from_precipitation<S: MapShape>(input_map: &CompleteMap<S>) -> Vec<[usize; 2]> {
     let mut points = vec![];
     let mut precipitation_temp = input_map.annual_precipitation.clone();
-    for x in 0..precipitation_temp.values.len() {
-        for y in 0..precipitation_temp.values[x].len() {
-            if x % 15 != 0 || y % 15 != 0 {
-                continue;
-            }
+
+    let dist = (precipitation_temp.values.len() / 70).max(10);
+    for x in (0..precipitation_temp.values.len()).step_by(dist) {
+        for y in (0..precipitation_temp.values[x].len()).step_by(dist) {
             let [latitude, longitude] = precipitation_temp.convert_coords(x, y);
             let height = input_map.height.get(latitude, longitude);
             if height > 500 {
@@ -240,11 +239,8 @@ fn get_start_points_from_precipitation<S: MapShape>(input_map: &CompleteMap<S>) 
             }
         }
     }
-    for x in 0..precipitation_temp.values.len() {
-        for y in 0..precipitation_temp.values[x].len() {
-            if x % 15 != 0 || y % 15 != 0 {
-                continue;
-            }
+    for x in (0..precipitation_temp.values.len()).step_by(dist) {
+        for y in (0..precipitation_temp.values[x].len()).step_by(dist) {
             let [latitude, longitude] = precipitation_temp.convert_coords(x, y);
             let height = input_map.height.get(latitude, longitude);
             if height > 100 {

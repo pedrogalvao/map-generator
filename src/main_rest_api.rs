@@ -147,16 +147,11 @@ fn get_image(
     input: Json<RequestData<ViewConfiguration>>,
     store: &State<MapStore>,
 ) -> Option<(ContentType, Vec<u8>)> {
-
     let result = match input.request_priority {
-        1 => {
-            set_current_thread_priority(ThreadPriority::Max)
-        },
-        _ => {
-            set_current_thread_priority(ThreadPriority::Min)
-        }
+        1 => set_current_thread_priority(ThreadPriority::Max),
+        _ => set_current_thread_priority(ThreadPriority::Min),
     };
-    
+
     if result.is_ok() {
         let input_inner = input.into_inner();
 
@@ -185,7 +180,6 @@ fn get_image(
         dbg!("Failed to set priority.");
         None
     }
-
 }
 
 #[derive(Deserialize)]
@@ -397,17 +391,7 @@ fn post_calculate_climate(
     let inner_input = input.into_inner();
     let key = inner_input.world_name.clone();
     let climate_config = inner_input.params;
-    let precipitation_percentiles = vec![
-        (15.0, 0),
-        (18.0, 30),
-        (22.0, 40),
-        (30.0, 50),
-        (55.0, 70),
-        (88.0, 150),
-        (100.0, 250),
-    ];
     let operation = CalculateClimate::new(
-        &precipitation_percentiles,
         climate_config.equator_temperature,
         climate_config.pole_temperature,
         climate_config.humidity,
@@ -467,7 +451,8 @@ fn get_size(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Di
     let result = set_current_thread_priority(ThreadPriority::Max);
     if result.is_ok() {
         let key = input.into_inner().world_name;
-        let locked_store: std::sync::MutexGuard<'_, HashMap<String, CompleteMapEnum>> = store.lock().unwrap();
+        let locked_store: std::sync::MutexGuard<'_, HashMap<String, CompleteMapEnum>> =
+            store.lock().unwrap();
         let Some(cmap_enum) = &locked_store.get(&key) else {
             return Json(Dimensions {
                 width: 0,
@@ -488,8 +473,7 @@ fn get_size(input: Json<BasicRequestParams>, store: &State<MapStore>) -> Json<Di
                 height: cmap.height.values.len(),
             }),
         }
-    }
-    else {
+    } else {
         todo!()
     }
 }

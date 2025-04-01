@@ -17,21 +17,14 @@ use super::{
 
 #[derive(Debug)]
 pub struct CalculateClimate {
-    precipitation_percentiles: Vec<(f32, i32)>,
     pole_temperature: f32,
     equator_temperature: f32,
     humidity: f32,
 }
 
 impl CalculateClimate {
-    pub fn new(
-        precipitation_percentiles: &Vec<(f32, i32)>,
-        equator_temperature: f32,
-        pole_temperature: f32,
-        humidity: f32,
-    ) -> Self {
+    pub fn new(equator_temperature: f32, pole_temperature: f32, humidity: f32) -> Self {
         Self {
-            precipitation_percentiles: precipitation_percentiles.clone(),
             pole_temperature,
             equator_temperature,
             humidity,

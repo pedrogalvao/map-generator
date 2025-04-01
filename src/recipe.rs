@@ -244,7 +244,7 @@ pub fn standard_recipe<T: MapShape + 'static>(config: &Configuration) -> MapPipe
     let mut map_pipeline = create_height_pipeline(config);
 
     if config.make_climate {
-        map_pipeline.add_step(CalculateClimate::new(&vec![], 25.0, -35.0, 1.0));
+        map_pipeline.add_step(CalculateClimate::new(25.0, -35.0, 1.0));
     }
 
     map_pipeline.add_step(Resize { factor: 2.0 });

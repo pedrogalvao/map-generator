@@ -173,7 +173,7 @@ class GenerationMenu(QDialog):
             "number_of_plates": 15,
             "water_percentage": 71.0,
             "land_height_percentiles": [[0.0, 0], [50.0, 250], [75.0, 500], [89.0, 1000], [93.0, 1500], [98.0, 2000], [99.0, 3500], [100.0, 6500]],
-            "ocean_depth_percentiles": [[0.0, -10000], [5.0, -4000], [60.0, -2000], [80.0, -200], [100.0, 0]],
+            "ocean_depth_percentiles": [[0.0, -10000], [5.0, -4000], [60.0, -2000], [80.0, -300], [100.0, 0]],
             "precipitation_percentiles": [[5.0, 0], [15.0, 20], [25.0, 35], [35.0, 50], [65.0, 70], [88.0, 150], [100.0, 250]],
             "number_of_rivers": 80,
         }
