@@ -61,12 +61,12 @@ class NewViewMenu(QDialog):
         self.left_layout.addRow("Projection", self.projection_combobox)
 
         self.width_input = QSpinBox()
-        self.width_input.setRange(10, 10000)
+        self.width_input.setRange(10, 40000)
         self.width_input.setValue(width)
         self.left_layout.addRow("Width", self.width_input)
 
         self.height_input = QSpinBox()
-        self.height_input.setRange(10, 5000)
+        self.height_input.setRange(10, 20000)
         self.height_input.setValue(height)
         self.left_layout.addRow("Height", self.height_input)
 
