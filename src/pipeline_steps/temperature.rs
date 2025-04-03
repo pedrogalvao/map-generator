@@ -4,7 +4,7 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelI
 
 use crate::{complete_map::CompleteMap, partial_map::PartialMap, shapes::map_shape::MapShape};
 
-use super::{pipeline_step::PipelineStep, resize::resize};
+use super::{pipeline_step::PipelineStep, resize::resize_f32};
 
 #[derive(Debug)]
 pub struct Temperature {
@@ -151,15 +151,13 @@ impl<S: MapShape> PipelineStep<S> for Temperature {
         }
         output_map = SmoothTemperature::new().apply(&output_map);
         for t in 0..output_map.temperature.len() {
-            resize(&mut output_map.temperature[t as usize], 2.0);
+            resize_f32(&mut output_map.temperature[t as usize], 2.0);
         }
-        output_map = SmoothTemperature::new().apply(&output_map);
         for t in 0..output_map.temperature.len() {
-            resize(&mut output_map.temperature[t as usize], 2.0);
+            resize_f32(&mut output_map.temperature[t as usize], 2.0);
         }
-        output_map = SmoothTemperature::new().apply(&output_map);
         for t in 0..output_map.temperature.len() {
-            resize(&mut output_map.temperature[t as usize], 2.0);
+            resize_f32(&mut output_map.temperature[t as usize], 2.0);
         }
         for t in 0..output_map.temperature.len() {
             output_map.temperature[t as usize] =

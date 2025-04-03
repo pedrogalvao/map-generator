@@ -4,13 +4,17 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelI
 
 use crate::{complete_map::CompleteMap, partial_map::PartialMap, shapes::map_shape::MapShape};
 
-use super::{pipeline_step::PipelineStep, util::rotate_coords};
+use super::{
+    pipeline_step::PipelineStep,
+    resize::{resize, resize_f32},
+    util::rotate_coords,
+};
 
 #[derive(Debug)]
 pub struct CalculateContinentality {}
 
 impl CalculateContinentality {
-    fn process_cont_element<S: MapShape>(
+    fn process_cont_element0<S: MapShape>(
         &self,
         x: usize,
         y: usize,
@@ -63,7 +67,7 @@ impl CalculateContinentality {
             as f32
             / 2.0;
     }
-    fn process_cont_element2<S: MapShape>(
+    fn process_cont_element<S: MapShape>(
         &self,
         x: usize,
         y: usize,
@@ -100,8 +104,8 @@ impl CalculateContinentality {
             }
         }
 
-        return (0.6
-            * (latitude_influence - 10.0 * ocean_influence as f32 / max_ocean_influence as f32))
+        return (0.8
+            * (latitude_influence - 20.0 * ocean_influence as f32 / max_ocean_influence as f32))
             .max(0.0);
     }
 }
@@ -112,8 +116,7 @@ impl<S: MapShape> PipelineStep<S> for CalculateContinentality {
 
     fn apply(&self, input_map: &CompleteMap<S>) -> CompleteMap<S> {
         let mut output_map = input_map.clone();
-        output_map.continentality =
-            PartialMap::new(input_map.height.circunference, input_map.height.height);
+        output_map.continentality = PartialMap::new(500, 250);
         let in2 = output_map.clone();
         // process elements in parallel with rayon
         output_map
@@ -126,6 +129,16 @@ impl<S: MapShape> PipelineStep<S> for CalculateContinentality {
                     *num = self.process_cont_element(x, y, Arc::new(&in2));
                 });
             });
+        while output_map.continentality.values.len() < output_map.height.values.len() {
+            let factor = (output_map.height.values.len() as f32
+                / output_map.continentality.values.len() as f32)
+                .min(2.0);
+            if factor == 2.0 {
+                resize_f32(&mut output_map.continentality, 2.0);
+            } else {
+                resize(&mut output_map.continentality, factor);
+            }
+        }
 
         return output_map;
     }

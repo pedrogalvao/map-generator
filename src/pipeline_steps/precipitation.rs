@@ -1,7 +1,11 @@
 use crate::{complete_map::CompleteMap, partial_map::PartialMap, shapes::map_shape::MapShape};
 use std::{f32::consts::PI, fmt, sync::Arc};
 
-use super::{pipeline_step::PipelineStep, resize::resize, smooth::smooth_pmap};
+use super::{
+    pipeline_step::PipelineStep,
+    resize::{resize, resize_i32},
+    smooth::smooth_pmap,
+};
 
 pub struct CalculatePrecipitation {
     humidity: f32,
@@ -236,8 +240,12 @@ impl<S: MapShape> PipelineStep<S> for CalculatePrecipitation {
                 let factor = (output_map.height.circunference as f32
                     / smooth_prec_map.circunference as f32)
                     .min(2.0);
-                resize(&mut smooth_prec_map, factor);
-                smooth_prec_map = smooth_pmap(&smooth_prec_map, 1);
+                if factor == 2.0 {
+                    resize_i32(&mut smooth_prec_map, 2.0);
+                } else {
+                    resize(&mut smooth_prec_map, factor);
+                    smooth_prec_map = smooth_pmap(&smooth_prec_map, 1);
+                }
             }
             output_map.precipitation.push(smooth_prec_map);
         }

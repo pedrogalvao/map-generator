@@ -54,10 +54,13 @@ pub fn resize_f32<S: MapShape>(pmap: &mut PartialMap<S, f32>, factor: f32) {
         // even rows
         let i2 = ((i as f32 * factor) as usize).min(new_values.len() - 1);
         for j in 0..pmap.values[i].len() {
-            let j2 = ((j as f32 * factor) as usize).min(new_values[i2].len() - 1);
+            let j2 = ((j as f32 * new_values[i2].len() as f32 / pmap.values[i].len() as f32)
+                as usize)
+                .min(new_values[i2].len() - 1);
             new_values[i2][j2] = pmap.values[i][j];
             if j2 + 1 < new_values[i2].len() {
-                new_values[i2][j2 + 1] = (pmap.values[i][j] + pmap.values[i][j + 1]) / 2.0;
+                new_values[i2][j2 + 1] =
+                    (pmap.values[i][j] + pmap.values[i][(j + 1) % pmap.values[i].len()]) / 2.0;
             }
         }
     }
@@ -75,6 +78,50 @@ pub fn resize_f32<S: MapShape>(pmap: &mut PartialMap<S, f32>, factor: f32) {
                     / new_values[i].len() as f32) as usize
                     % new_values[i + 1].len();
                 new_values[i][j] = (new_values[i - 1][j_up] + new_values[i + 1][j_down]) / 2.0;
+            } else {
+                new_values[i][j] = new_values[i - 1][j_up];
+            }
+        }
+    }
+    pmap.height = (factor * pmap.height as f32) as usize;
+    pmap.circunference = (factor * pmap.circunference as f32) as usize;
+    pmap.values = new_values;
+}
+
+pub fn resize_i32<S: MapShape>(pmap: &mut PartialMap<S, i32>, factor: f32) {
+    let mut new_values = S::new_vec(
+        (factor * pmap.circunference as f32) as usize,
+        (factor * pmap.height as f32) as usize,
+    );
+
+    for i in 0..pmap.values.len() {
+        // even rows
+        let i2 = ((i as f32 * factor) as usize).min(new_values.len() - 1);
+        for j in 0..pmap.values[i].len() {
+            let j2 = ((j as f32 * new_values[i2].len() as f32 / pmap.values[i].len() as f32)
+                as usize)
+                .min(new_values[i2].len() - 1);
+            new_values[i2][j2] = pmap.values[i][j];
+            if j2 + 1 < new_values[i2].len() {
+                new_values[i2][j2 + 1] =
+                    (pmap.values[i][j] + pmap.values[i][(j + 1) % pmap.values[i].len()]) / 2;
+            }
+        }
+    }
+    for i in 0..new_values.len() {
+        // odd rows
+        if i % 2 == 0 {
+            continue;
+        }
+        for j in 0..new_values[i].len() {
+            let j_up = (j as f32 * new_values[i - 1].len() as f32 / new_values[i].len() as f32)
+                as usize
+                % new_values[i - 1].len();
+            if i < new_values.len() - 1 {
+                let j_down = (j as f32 * new_values[i + 1].len() as f32
+                    / new_values[i].len() as f32) as usize
+                    % new_values[i + 1].len();
+                new_values[i][j] = (new_values[i - 1][j_up] + new_values[i + 1][j_down]) / 2;
             } else {
                 new_values[i][j] = new_values[i - 1][j_up];
             }
@@ -159,26 +206,20 @@ impl<S: MapShape> PipelineStep<S> for Resize {
     }
     fn apply(&self, input_map: &CompleteMap<S>) -> CompleteMap<S> {
         let mut output_map = input_map.clone();
-        resize(&mut output_map.height, self.factor);
-        resize(&mut output_map.tectonic_plates, self.factor);
-        let mut new_values = vec![];
-        for x in 0..output_map.height.values.len() {
-            new_values.push(vec![]);
-            for y in 0..output_map.height.values[x].len() {
-                let neighbors = output_map.height.get_pixel_neighbours([x, y], 1);
-                let mut sum = 0;
-                let mut len = 0;
-                for i in 0..neighbors.len() {
-                    for j in 0..neighbors[i].len() {
-                        sum += neighbors[i][j];
-                        len += 1;
-                    }
-                }
-                let mean = sum / len;
-                new_values[x].push(mean);
+        while (output_map.height.values.len() as f32)
+            < (input_map.height.values.len() as f32 * self.factor)
+        {
+            let factor = (self.factor * (output_map.height.values.len() as f32)
+                / (input_map.height.values.len() as f32))
+                .min(2.0);
+            if factor == 2.0 {
+                resize_i32(&mut output_map.height, factor);
+            } else {
+                resize(&mut output_map.height, factor);
             }
         }
-        output_map.height.values = new_values;
+
+        resize(&mut output_map.tectonic_plates, self.factor);
         smooth_plates(&mut output_map.tectonic_plates);
         smooth_plates(&mut output_map.tectonic_plates);
         output_map.mountain_chains = resize_chains(&output_map.mountain_chains);
